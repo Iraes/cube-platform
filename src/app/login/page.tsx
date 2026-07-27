@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { getSessionUser } from "@/lib/session";
 import { LoginForm } from "./LoginForm";
 
-export const metadata = { title: "Вход — Fabel" };
+export const metadata = { title: "Вход — Cube" };
 
 export default async function LoginPage() {
   if (await getSessionUser()) redirect("/");

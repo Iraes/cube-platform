@@ -7,7 +7,7 @@ import { requireUser } from "@/lib/session";
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const module = getModule(slug);
-  return { title: module ? `${module.title} — Fabel` : "Модуль не найден — Fabel" };
+  return { title: module ? `${module.title} — Cube` : "Модуль не найден — Cube" };
 }
 
 export default async function ModulePage({ params }: { params: Promise<{ slug: string }> }) {

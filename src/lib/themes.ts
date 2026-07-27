@@ -17,7 +17,7 @@ export const THEMES: ThemeInfo[] = [
 
 export const DEFAULT_THEME: ThemeId = "graphite";
 
-export const THEME_STORAGE_KEY = "fabel:theme";
+export const THEME_STORAGE_KEY = "cube:theme";
 
 export function isThemeId(value: unknown): value is ThemeId {
   return THEMES.some((theme) => theme.id === value);

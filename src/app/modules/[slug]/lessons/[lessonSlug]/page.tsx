@@ -11,7 +11,7 @@ export async function generateMetadata({
 }) {
   const { slug, lessonSlug } = await params;
   const lesson = getLesson(slug, lessonSlug);
-  return { title: lesson ? `${lesson.title} — Fabel` : "Урок не найден — Fabel" };
+  return { title: lesson ? `${lesson.title} — Cube` : "Урок не найден — Cube" };
 }
 
 export default async function LessonPage({

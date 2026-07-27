@@ -12,7 +12,7 @@ export async function Header() {
         <span className="flex h-7 w-7 items-center justify-center rounded-md bg-accent font-mono text-[11px] font-bold text-accent-fg">
           {"{}"}
         </span>
-        <span className="text-[15px] font-semibold tracking-tight">Fabel</span>
+        <span className="text-[15px] font-semibold tracking-tight">Cube</span>
       </Link>
 
       <div className="flex-1" />

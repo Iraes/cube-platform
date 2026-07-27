@@ -23,12 +23,12 @@ export const LINE_OFFSET = 1;
 export const MAX_LOG_LINES = 500;
 
 const PRELUDE =
-  "console.log=function(){__fabelPush('log',arguments)};console.info=console.log;console.warn=console.log;console.debug=console.log;console.error=function(){__fabelPush('error',arguments)};";
+  "console.log=function(){__cubePush('log',arguments)};console.info=console.log;console.warn=console.log;console.debug=console.log;console.error=function(){__cubePush('error',arguments)};";
 
 const HARNESS = `
-function __fabelPush(level, args) {
-  var n = (globalThis.__fabelLogCount || 0) + 1;
-  globalThis.__fabelLogCount = n;
+function __cubePush(level, args) {
+  var n = (globalThis.__cubeLogCount || 0) + 1;
+  globalThis.__cubeLogCount = n;
   if (n > ${MAX_LOG_LINES}) {
     if (n === ${MAX_LOG_LINES + 1}) {
       self.postMessage({
@@ -39,11 +39,11 @@ function __fabelPush(level, args) {
     return;
   }
   var parts = [];
-  for (var i = 0; i < args.length; i++) parts.push(__fabelFormat(args[i]));
+  for (var i = 0; i < args.length; i++) parts.push(__cubeFormat(args[i]));
   self.postMessage({ type: 'log', line: { level: level, text: parts.join(' ') } });
 }
 
-function __fabelFormat(value, seen) {
+function __cubeFormat(value, seen) {
   seen = seen || [];
   if (value === undefined) return 'undefined';
   if (value === null) return 'null';
@@ -61,30 +61,30 @@ function __fabelFormat(value, seen) {
   var nested = seen.concat([value]);
   if (Array.isArray(value)) {
     var items = [];
-    for (var i = 0; i < value.length; i++) items.push(__fabelFormat(value[i], nested));
+    for (var i = 0; i < value.length; i++) items.push(__cubeFormat(value[i], nested));
     return '[' + items.join(', ') + ']';
   }
   if (value instanceof Map) {
     var pairs = [];
     value.forEach(function (v, k) {
-      pairs.push(__fabelFormat(k, nested) + ' => ' + __fabelFormat(v, nested));
+      pairs.push(__cubeFormat(k, nested) + ' => ' + __cubeFormat(v, nested));
     });
     return 'Map(' + pairs.join(', ') + ')';
   }
   if (value instanceof Set) {
     var vals = [];
-    value.forEach(function (v) { vals.push(__fabelFormat(v, nested)); });
+    value.forEach(function (v) { vals.push(__cubeFormat(v, nested)); });
     return 'Set(' + vals.join(', ') + ')';
   }
   var keys = Object.keys(value);
   var props = [];
   for (var j = 0; j < keys.length; j++) {
-    props.push(keys[j] + ': ' + __fabelFormat(value[keys[j]], nested));
+    props.push(keys[j] + ': ' + __cubeFormat(value[keys[j]], nested));
   }
   return '{ ' + props.join(', ') + ' }';
 }
 
-function __fabelDeepEqual(a, b) {
+function __cubeDeepEqual(a, b) {
   if (a === b) return true;
   if (typeof a === 'number' && typeof b === 'number') {
     return Number.isNaN(a) && Number.isNaN(b);
@@ -97,7 +97,7 @@ function __fabelDeepEqual(a, b) {
   if (Array.isArray(a)) {
     if (a.length !== b.length) return false;
     for (var i = 0; i < a.length; i++) {
-      if (!__fabelDeepEqual(a[i], b[i])) return false;
+      if (!__cubeDeepEqual(a[i], b[i])) return false;
     }
     return true;
   }
@@ -106,7 +106,7 @@ function __fabelDeepEqual(a, b) {
     var mapKeys = Array.from(a.keys());
     for (var m = 0; m < mapKeys.length; m++) {
       if (!b.has(mapKeys[m])) return false;
-      if (!__fabelDeepEqual(a.get(mapKeys[m]), b.get(mapKeys[m]))) return false;
+      if (!__cubeDeepEqual(a.get(mapKeys[m]), b.get(mapKeys[m]))) return false;
     }
     return true;
   }
@@ -123,28 +123,28 @@ function __fabelDeepEqual(a, b) {
   if (ka.length !== kb.length) return false;
   for (var k = 0; k < ka.length; k++) {
     if (!Object.prototype.hasOwnProperty.call(b, ka[k])) return false;
-    if (!__fabelDeepEqual(a[ka[k]], b[ka[k]])) return false;
+    if (!__cubeDeepEqual(a[ka[k]], b[ka[k]])) return false;
   }
   return true;
 }
 
 /** Значение может быть непередаваемым через postMessage (функция, DOM-узел) */
-function __fabelCloneable(value) {
+function __cubeCloneable(value) {
   try {
     structuredClone(value);
     return value;
   } catch (e) {
-    return '[значение не сериализуется: ' + __fabelFormat(value) + ']';
+    return '[значение не сериализуется: ' + __cubeFormat(value) + ']';
   }
 }
 
-function __fabelErrorText(e) {
+function __cubeErrorText(e) {
   if (e instanceof Error) return e.name + ': ' + e.message;
   if (e && e.message) return String(e.message);
-  return 'Выброшено значение: ' + __fabelFormat(e);
+  return 'Выброшено значение: ' + __cubeFormat(e);
 }
 
-async function __fabelRunTests(tests) {
+async function __cubeRunTests(tests) {
   var results = [];
   var firstError = null;
 
@@ -157,23 +157,23 @@ async function __fabelRunTests(tests) {
       if (actual && typeof actual.then === 'function') actual = await actual;
       results.push({
         name: testCase.name,
-        passed: __fabelDeepEqual(actual, testCase.expected),
-        expected: __fabelCloneable(testCase.expected),
-        actual: __fabelCloneable(actual)
+        passed: __cubeDeepEqual(actual, testCase.expected),
+        expected: __cubeCloneable(testCase.expected),
+        actual: __cubeCloneable(actual)
       });
     } catch (e) {
       // Падение одного теста не останавливает остальные
       if (!firstError) {
         firstError = {
-          message: __fabelErrorText(e),
+          message: __cubeErrorText(e),
           stack: e && e.stack ? String(e.stack) : undefined
         };
       }
       results.push({
         name: testCase.name,
         passed: false,
-        expected: __fabelCloneable(testCase.expected),
-        error: __fabelErrorText(e)
+        expected: __cubeCloneable(testCase.expected),
+        error: __cubeErrorText(e)
       });
     }
   }
@@ -218,13 +218,13 @@ self.onmessage = async function (event) {
   }
 
   try {
-    var outcome = await __fabelRunTests(tests);
+    var outcome = await __cubeRunTests(tests);
     self.postMessage({ type: 'done', results: outcome.results, error: outcome.error });
   } catch (e) {
     self.postMessage({
       type: 'done',
       results: [],
-      error: { message: __fabelErrorText(e), stack: e && e.stack ? String(e.stack) : undefined }
+      error: { message: __cubeErrorText(e), stack: e && e.stack ? String(e.stack) : undefined }
     });
   }
 };

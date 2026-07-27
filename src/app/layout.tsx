@@ -5,7 +5,7 @@ import { DEFAULT_THEME, THEMES, THEME_STORAGE_KEY } from "@/lib/themes";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Fabel — практикум по программированию",
+  title: "Cube — практикум по программированию",
   description: "Учебные материалы и задачи с запуском кода прямо в браузере",
 };
 

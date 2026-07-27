@@ -8,7 +8,7 @@ import { getTask } from "@/lib/tasks";
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const task = getTask(slug);
-  return { title: task ? `${task.title} — Fabel` : "Задача не найдена — Fabel" };
+  return { title: task ? `${task.title} — Cube` : "Задача не найдена — Cube" };
 }
 
 export default async function TaskPage({ params }: { params: Promise<{ slug: string }> }) {
