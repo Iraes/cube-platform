@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Header } from "@/components/Header";
+import { InlineScript } from "@/components/InlineScript";
 import { DEFAULT_THEME, THEMES, THEME_STORAGE_KEY } from "@/lib/themes";
 import "./globals.css";
 
@@ -27,7 +28,7 @@ export default function RootLayout({
   return (
     <html lang="ru" data-theme={DEFAULT_THEME} suppressHydrationWarning>
       <head>
-        <script dangerouslySetInnerHTML={{ __html: themeBootstrap }} />
+        <InlineScript html={themeBootstrap} />
       </head>
       <body className="min-h-full antialiased">
         <div className="flex min-h-screen flex-col">
