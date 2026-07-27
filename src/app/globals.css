@@ -1,1 +1,403 @@
 @import "tailwindcss";
+
+/* ============================================================
+   Темы. Полные наборы CSS-переменных, переключаются через
+   data-theme на :root. Никакого prefers-color-scheme:
+   выбор пользователя — единственный источник истины.
+
+   Тёмные: графит (по умолчанию), уголь, контраст.
+   Светлые: туман, пергамент.
+   ============================================================ */
+
+/* ---------- Графит: нейтрально-холодная, по умолчанию ---------- */
+:root,
+:root[data-theme="graphite"] {
+  color-scheme: dark;
+
+  --c-bg: #202428;
+  --c-surface: #262b30;
+  --c-surface-2: #2b3136;
+  --c-hover: #313840;
+  --c-border: #363d44;
+  --c-border-strong: #46505a;
+
+  --c-text: #d3d9de;
+  --c-muted: #8f99a3;
+  --c-faint: #6a747e;
+
+  --c-accent: #7aa5c9;
+  --c-accent-strong: #8fb6d8;
+  --c-accent-fg: #16202a;
+  --c-accent-soft: #7aa5c924;
+
+  --c-ok: #85b795;
+  --c-ok-soft: #85b79522;
+  --c-err: #cf8d8d;
+  --c-err-soft: #cf8d8d20;
+  --c-warn: #cfae7d;
+
+  --syn-keyword: #b48ead;
+  --syn-string: #a3be8c;
+  --syn-number: #d08770;
+  --syn-comment: #6b7680;
+  --syn-func: #88b8d8;
+  --syn-prop: #8fbcbb;
+  --syn-op: #9fb4c7;
+
+  --cm-selection: #7aa5c938;
+  --cm-active-line: #ffffff09;
+}
+
+/* ---------- Уголь: глубокая тёплая ---------- */
+:root[data-theme="charcoal"] {
+  color-scheme: dark;
+
+  --c-bg: #191a1c;
+  --c-surface: #1f2023;
+  --c-surface-2: #242528;
+  --c-hover: #2b2c30;
+  --c-border: #2e3034;
+  --c-border-strong: #3e4147;
+
+  --c-text: #cfccc6;
+  --c-muted: #8d8a83;
+  --c-faint: #67645e;
+
+  --c-accent: #bf9e60;
+  --c-accent-strong: #d0b078;
+  --c-accent-fg: #211a0e;
+  --c-accent-soft: #bf9e6022;
+
+  --c-ok: #94ab7d;
+  --c-ok-soft: #94ab7d22;
+  --c-err: #c98181;
+  --c-err-soft: #c9818120;
+  --c-warn: #c8a24a;
+
+  --syn-keyword: #d3869b;
+  --syn-string: #a9b665;
+  --syn-number: #d8a657;
+  --syn-comment: #665f54;
+  --syn-func: #7daea3;
+  --syn-prop: #89b482;
+  --syn-op: #a89984;
+
+  --cm-selection: #bf9e6030;
+  --cm-active-line: #ffffff08;
+}
+
+/* ---------- Контраст: яркие акценты, «чтобы не засыпать» ---------- */
+:root[data-theme="contrast"] {
+  color-scheme: dark;
+
+  --c-bg: #101215;
+  --c-surface: #16191d;
+  --c-surface-2: #1b1f24;
+  --c-hover: #232830;
+  --c-border: #2a3038;
+  --c-border-strong: #3c4450;
+
+  --c-text: #e9edf1;
+  --c-muted: #98a4ae;
+  --c-faint: #6e7a86;
+
+  --c-accent: #4da3ff;
+  --c-accent-strong: #74b8ff;
+  --c-accent-fg: #061020;
+  --c-accent-soft: #4da3ff26;
+
+  --c-ok: #4ecb71;
+  --c-ok-soft: #4ecb7124;
+  --c-err: #ff6b6b;
+  --c-err-soft: #ff6b6b20;
+  --c-warn: #ffb454;
+
+  --syn-keyword: #c678dd;
+  --syn-string: #98c379;
+  --syn-number: #d19a66;
+  --syn-comment: #5c6370;
+  --syn-func: #61afef;
+  --syn-prop: #56b6c2;
+  --syn-op: #abb2bf;
+
+  --cm-selection: #4da3ff40;
+  --cm-active-line: #ffffff0c;
+}
+
+/* ---------- Туман: светлая приглушённо-серая ---------- */
+:root[data-theme="mist"] {
+  color-scheme: light;
+
+  --c-bg: #e6e8ea;
+  --c-surface: #f0f2f3;
+  --c-surface-2: #f8f9fa;
+  --c-hover: #e2e5e8;
+  --c-border: #d0d4d8;
+  --c-border-strong: #b4bac0;
+
+  --c-text: #363c42;
+  --c-muted: #6d767e;
+  --c-faint: #969ea6;
+
+  --c-accent: #46708f;
+  --c-accent-strong: #38617f;
+  --c-accent-fg: #ffffff;
+  --c-accent-soft: #46708f1c;
+
+  --c-ok: #4f7f56;
+  --c-ok-soft: #4f7f5620;
+  --c-err: #a84f4f;
+  --c-err-soft: #a84f4f18;
+  --c-warn: #96702a;
+
+  --syn-keyword: #7d5a9e;
+  --syn-string: #5a7d3f;
+  --syn-number: #a15c28;
+  --syn-comment: #94a0a8;
+  --syn-func: #2f6f9f;
+  --syn-prop: #3a7a72;
+  --syn-op: #5a6570;
+
+  --cm-selection: #46708f2b;
+  --cm-active-line: #363c420d;
+}
+
+/* ---------- Пергамент: светлая тёплая «бумажная» ---------- */
+:root[data-theme="sepia"] {
+  color-scheme: light;
+
+  --c-bg: #ece5d8;
+  --c-surface: #f4eee1;
+  --c-surface-2: #faf5ea;
+  --c-hover: #e7dfcf;
+  --c-border: #d8cfbc;
+  --c-border-strong: #bfb49d;
+
+  --c-text: #4a4238;
+  --c-muted: #857a68;
+  --c-faint: #a89d89;
+
+  --c-accent: #8a6d3b;
+  --c-accent-strong: #75592c;
+  --c-accent-fg: #fdfaf3;
+  --c-accent-soft: #8a6d3b1f;
+
+  --c-ok: #6d8a4e;
+  --c-ok-soft: #6d8a4e22;
+  --c-err: #ad5a4a;
+  --c-err-soft: #ad5a4a1a;
+  --c-warn: #a07a2c;
+
+  --syn-keyword: #8f4e8b;
+  --syn-string: #4e7a3a;
+  --syn-number: #b0562e;
+  --syn-comment: #a29a85;
+  --syn-func: #3a6ea5;
+  --syn-prop: #8a6d3b;
+  --syn-op: #6d6355;
+
+  --cm-selection: #8a6d3b2b;
+  --cm-active-line: #4a42380f;
+}
+
+/* Маппинг переменных в токены Tailwind: bg-surface, text-muted, border-border… */
+@theme inline {
+  --color-bg: var(--c-bg);
+  --color-surface: var(--c-surface);
+  --color-surface-2: var(--c-surface-2);
+  --color-hover: var(--c-hover);
+  --color-border: var(--c-border);
+  --color-border-strong: var(--c-border-strong);
+
+  --color-text: var(--c-text);
+  --color-muted: var(--c-muted);
+  --color-faint: var(--c-faint);
+
+  --color-accent: var(--c-accent);
+  --color-accent-strong: var(--c-accent-strong);
+  --color-accent-fg: var(--c-accent-fg);
+  --color-accent-soft: var(--c-accent-soft);
+
+  --color-ok: var(--c-ok);
+  --color-ok-soft: var(--c-ok-soft);
+  --color-err: var(--c-err);
+  --color-err-soft: var(--c-err-soft);
+  --color-warn: var(--c-warn);
+
+  --font-mono: "Cascadia Code", "JetBrains Mono", Consolas, "Fira Code", ui-monospace, monospace;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  background: var(--c-bg);
+  color: var(--c-text);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--c-border-strong) transparent;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--c-border-strong);
+  border: 2px solid transparent;
+  border-radius: 6px;
+  background-clip: content-box;
+}
+
+/* ============ CodeMirror ============ */
+
+.cm-editor {
+  height: 100%;
+  background: var(--c-surface);
+  color: var(--c-text);
+}
+
+.cm-editor.cm-focused {
+  outline: none;
+}
+
+.cm-scroller {
+  font-family: var(--font-mono);
+  font-size: 13.5px;
+  line-height: 1.65;
+}
+
+.cm-content {
+  caret-color: var(--c-accent-strong);
+  padding: 12px 0;
+}
+
+.cm-gutters {
+  background: var(--c-surface);
+  color: var(--c-faint);
+  border-right: 1px solid var(--c-border);
+}
+
+.cm-lineNumbers .cm-gutterElement {
+  padding: 0 10px 0 16px;
+}
+
+.cm-activeLine {
+  background: var(--cm-active-line);
+}
+
+.cm-activeLineGutter {
+  background: var(--cm-active-line);
+  color: var(--c-muted);
+}
+
+.cm-cursor,
+.cm-dropCursor {
+  border-left-color: var(--c-accent-strong);
+}
+
+.cm-selectionBackground,
+.cm-editor .cm-selectionBackground,
+.cm-editor.cm-focused .cm-selectionBackground,
+.cm-content ::selection {
+  background: var(--cm-selection) !important;
+}
+
+.cm-matchingBracket,
+.cm-editor.cm-focused .cm-matchingBracket {
+  background: var(--c-accent-soft);
+  outline: 1px solid var(--c-border-strong);
+}
+
+.cm-tooltip {
+  background: var(--c-surface-2);
+  border: 1px solid var(--c-border);
+  color: var(--c-text);
+}
+
+.cm-tooltip-autocomplete ul li[aria-selected] {
+  background: var(--c-accent-soft);
+  color: var(--c-text);
+}
+
+/* ============ Тексты: описания задач и уроки ============ */
+
+.prose-task p,
+.prose-lesson p {
+  margin-bottom: 0.75rem;
+  line-height: 1.7;
+}
+
+.prose-task ul,
+.prose-task ol,
+.prose-lesson ul,
+.prose-lesson ol {
+  margin-bottom: 0.75rem;
+  padding-left: 1.35rem;
+  line-height: 1.7;
+}
+
+.prose-task ul,
+.prose-lesson ul {
+  list-style: disc;
+}
+
+.prose-task ol,
+.prose-lesson ol {
+  list-style: decimal;
+}
+
+.prose-task li,
+.prose-lesson li {
+  margin-bottom: 0.25rem;
+}
+
+.prose-task li::marker,
+.prose-lesson li::marker {
+  color: var(--c-faint);
+}
+
+.prose-task code,
+.prose-lesson code {
+  font-family: var(--font-mono);
+  font-size: 0.82em;
+  padding: 0.1em 0.35em;
+  border-radius: 4px;
+  background: var(--c-hover);
+  color: var(--c-accent-strong);
+}
+
+.prose-task pre,
+.prose-lesson pre {
+  margin-bottom: 0.75rem;
+  padding: 0.75rem 0.9rem;
+  border: 1px solid var(--c-border);
+  border-radius: 8px;
+  background: var(--c-bg);
+  overflow-x: auto;
+}
+
+.prose-task pre code,
+.prose-lesson pre code {
+  padding: 0;
+  background: none;
+  color: var(--c-text);
+  font-size: 0.8rem;
+  line-height: 1.6;
+}
+
+.prose-task strong,
+.prose-lesson strong {
+  font-weight: 600;
+  color: var(--c-text);
+}
+
+.prose-lesson {
+  font-size: 15px;
+}

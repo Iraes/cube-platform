@@ -1,34 +1,108 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Fabel — платформа для обучения программированию
 
-## Getting Started
+Модуль = теория (видео + статьи) → задачи. Код пишется в редакторе и выполняется
+прямо в браузере: сначала «Запустить» для черновой проверки, потом «Отправить на
+проверку» — прогон тестов и зачёт задачи.
 
-First, run the development server:
+## Запуск
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+npm run dev        # http://127.0.0.1:3000
+npm run build      # прод-сборка
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Next.js 16 (App Router, Turbopack) + TypeScript + Tailwind v4, редактор — CodeMirror 6.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Как устроен запуск кода
 
-## Learn More
+Шов между UI и исполнителем — [`src/lib/runner`](src/lib/runner). Страница задачи знает
+только `Task`, `Runner` и `RunResult`, поэтому новый исполнитель (iframe для DOM-задач,
+серверный раннер для Go) подключается без правок интерфейса — выбор идёт по `task.kind`
+в [`index.ts`](src/lib/runner/index.ts).
 
-To learn more about Next.js, take a look at the following resources:
+**Два режима.** `run` — выполнить код и показать вывод, ничего не проверяя. `submit` —
+прогнать тесты и вынести вердикт; при всех зелёных задача отмечается решённой.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+**JS-задачи** (`kind: 'algorithm'`) исполняются в Web Worker из Blob, с таймаутом 4 с —
+бесконечный цикл гасится `worker.terminate()`, интерфейс не виснет.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Скрипт воркера собирается строго в таком порядке:
 
-## Deploy on Vercel
+```
+строка 1      пролог: подмена console.*
+строки 2..N+1 код пользователя — как есть, без обёрток
+дальше        харнесс: сравнение, прогон тестов, отправка результата
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Код пользователя не оборачивается в `new Function`: тогда номера строк в `error.stack`
+совпадают с номерами в редакторе с точностью до известного смещения (`LINE_OFFSET = 1`,
+пролог занимает ровно одну строку). Функции харнесса объявлены через `function`, поэтому
+поднимаются в начало скрипта и доступны прологу.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Сравнение результатов — глубокое (массивы, объекты, вложенность, `Map`/`Set`, `NaN`).
+Каждый тест обёрнут в свой `try/catch`: упавший помечается проваленным, остальные
+продолжают выполняться. Логи пользователя и результаты тестов — разные поля `RunResult`.
+
+## Как добавить контент
+
+**Задачу** — файл в [`src/lib/tasks`](src/lib/tasks) и строка в `index.ts` того же каталога:
+
+```ts
+export const myTask: AlgorithmTask = {
+  kind: 'algorithm',
+  slug: 'my-task',
+  title: 'Название',
+  language: 'javascript',
+  description: 'Текст в мини-markdown: абзацы, списки, `код`, ```блоки```, **жирный**',
+  starterCode: 'function solution(x) {\n\n}\n',
+  tests: [{ name: 'solution(1) === 2', input: [1], expected: 2 }],
+};
+```
+
+От ученика всегда ждут функцию с именем `solution`; её вызывают ровно один раз на тест.
+
+**Модуль с уроками** — файл в [`src/lib/content/modules`](src/lib/content/modules) и строка
+в [`src/lib/content/index.ts`](src/lib/content/index.ts). Урок собирается из блоков:
+
+```ts
+blocks: [
+  { type: 'text', markdown: 'Теория в мини-markdown' },
+  { type: 'video', url: 'https://youtu.be/ID', title: 'Разбор темы' },
+  { type: 'article', url: 'https://learn.javascript.ru/variables', title: 'Переменные',
+    source: 'learn.javascript.ru', note: 'Зачем читать' },
+]
+```
+
+**Видео проигрывается прямо на странице.** Распознаются ссылки YouTube (`watch?v=`,
+`youtu.be`, `/embed/`, `/shorts/`), Vimeo, RuTube, VK, а также прямые файлы
+`.mp4/.webm/.ogg/.mov` — они играют в теге `<video>`. Пустой `url` показывает
+заметную заглушку «вставьте ссылку», ничего не ломая. Логика — в
+[`VideoEmbed.tsx`](src/components/VideoEmbed.tsx).
+
+Порядок прохождения модуля — сначала все уроки, потом задачи из `taskSlugs`. Кнопка
+внизу урока отмечает его прочитанным и ведёт на следующий шаг.
+
+## Темы
+
+Пять тем полными наборами CSS-переменных в [`globals.css`](src/app/globals.css),
+переключение — `data-theme` на `:root`, выбор хранится в localStorage. Тёмные: графит
+(по умолчанию), уголь, контраст. Светлые: туман, пергамент. `prefers-color-scheme`
+намеренно не используется — выбор пользователя единственный источник истины. Тема
+применяется инлайновым скриптом в `<head>` до первой отрисовки, поэтому нет мигания.
+
+Подсветка кода тоже построена на этих переменных, так что редактор перекрашивается
+вместе с интерфейсом.
+
+## Прогресс
+
+Прочитанные уроки и решённые задачи лежат в localStorage —
+[`src/lib/progress.ts`](src/lib/progress.ts). Это единственное место, которое нужно
+переписать, когда появится БД (этап 2): API узкий и не протекает в компоненты.
+
+## Что дальше
+
+- **Этап 2** — авторизация (Auth.js) и сохранение прогресса в Postgres через Drizzle.
+- **Этап 3** — деплой на Vercel.
+- **Этап 1b** — задачи типа `dom` (оживить готовый HTML) через iframe-раннер;
+  типы уже описаны в [`runner/types.ts`](src/lib/runner/types.ts).
