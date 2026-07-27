@@ -1,11 +1,12 @@
 import "./env";
-import { createUser, getUserByEmail, listUsers, setUserPassword } from "@/lib/db/users";
+import { createUser, deleteUser, getUserByEmail, listUsers, setUserPassword } from "@/lib/db/users";
 
 /**
  * Заведение учётных записей владельцем: регистрации на сайте нет.
  *
  *   npm run user:add -- --email ivan@example.com --password "секрет" --name Иван
  *   npm run user:add -- --email ivan@example.com --password "новый" --reset
+ *   npm run user:delete -- --email ivan@example.com
  *   npm run user:list
  */
 function parseArgs(argv: string[]): Record<string, string | boolean> {
@@ -46,6 +47,21 @@ async function main() {
 
   const email = typeof args.email === "string" ? args.email : "";
   const password = typeof args.password === "string" ? args.password : "";
+
+  if (args.delete) {
+    if (!email) {
+      console.error("Укажите логин: npm run user:delete -- --email ivan@example.com");
+      process.exit(1);
+    }
+    const removed = await deleteUser(email);
+    console.log(
+      removed
+        ? `Пользователь ${email} удалён вместе со своим прогрессом`
+        : `Пользователь ${email} не найден`,
+    );
+    return;
+  }
+
   const name = typeof args.name === "string" ? args.name : undefined;
   const role = args.role === "teacher" ? "teacher" : "student";
 

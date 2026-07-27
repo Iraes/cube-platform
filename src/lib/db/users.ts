@@ -46,6 +46,17 @@ export async function setUserPassword(email: string, password: string): Promise<
   return updated.length > 0;
 }
 
+export async function deleteUser(email: string): Promise<boolean> {
+  const db = await getDb();
+
+  const removed = await db
+    .delete(users)
+    .where(eq(users.email, normalizeEmail(email)))
+    .returning({ id: users.id });
+
+  return removed.length > 0;
+}
+
 export async function listUsers(): Promise<UserRow[]> {
   const db = await getDb();
   return db.select().from(users);

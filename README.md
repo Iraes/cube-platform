@@ -103,6 +103,7 @@ blocks: [
 ```bash
 npm run user:add -- --email ivan@example.com --password "секрет" --name Иван
 npm run user:add -- --email ivan@example.com --password "новый" --reset   # смена пароля
+npm run user:delete -- --email ivan@example.com                          # вместе с прогрессом
 npm run user:list
 ```
 
