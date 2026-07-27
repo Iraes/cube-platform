@@ -94,15 +94,44 @@ blocks: [
 Подсветка кода тоже построена на этих переменных, так что редактор перекрашивается
 вместе с интерфейсом.
 
-## Прогресс
+## Вход и учётные записи
 
-Прочитанные уроки и решённые задачи лежат в localStorage —
-[`src/lib/progress.ts`](src/lib/progress.ts). Это единственное место, которое нужно
-переписать, когда появится БД (этап 2): API узкий и не протекает в компоненты.
+Регистрации на сайте нет: учётки заводит владелец и передаёт логин с паролем
+ученику. Вход — Auth.js (NextAuth v5) с Credentials-провайдером, сессии в JWT,
+пароли хранятся как scrypt-хеш (`scrypt:<соль>:<хеш>`, без внешних библиотек).
+
+```bash
+npm run user:add -- --email ivan@example.com --password "секрет" --name Иван
+npm run user:add -- --email ivan@example.com --password "новый" --reset   # смена пароля
+npm run user:list
+```
+
+Все страницы кроме `/login` требуют входа — за это отвечает `requireUser()`
+из [`src/lib/session.ts`](src/lib/session.ts). API-роуты проверяют сессию
+самостоятельно и отвечают 401 без неё.
+
+## База данных и прогресс
+
+Postgres через Drizzle. Три таблицы: `users`, `submissions` (история отправок
+на проверку) и `lesson_progress` (прочитанные уроки). «Решено» — это наличие
+записи в `submissions` с `passed = true`, отдельной таблицы прогресса нет.
+
+```bash
+npm run db:generate   # SQL-миграции из схемы
+npm run db:migrate    # накатить их
+```
+
+Переменные окружения — см. [.env.example](.env.example). С `DATABASE_URL`
+приложение работает с Neon, без него поднимает встраиваемый Postgres (PGlite)
+в папке `.pglite`: разработка и проверка не требуют облачной БД.
+
+Прогресс читают серверные страницы через
+[`src/lib/progress.ts`](src/lib/progress.ts) и передают компонентам пропсами;
+клиент только сообщает о событиях через
+[`progressClient.ts`](src/lib/progressClient.ts) и вызывает `router.refresh()`.
 
 ## Что дальше
 
-- **Этап 2** — авторизация (Auth.js) и сохранение прогресса в Postgres через Drizzle.
 - **Этап 3** — деплой на Vercel.
 - **Этап 1b** — задачи типа `dom` (оживить готовый HTML) через iframe-раннер;
   типы уже описаны в [`runner/types.ts`](src/lib/runner/types.ts).

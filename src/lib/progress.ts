@@ -1,63 +1,54 @@
+import { and, eq } from "drizzle-orm";
+import { getDb } from "@/lib/db";
+import { lessonProgress, submissions } from "@/lib/db/schema";
+
 /**
- * Прогресс ученика: прочитанные уроки и решённые задачи.
- *
- * Пока хранится в localStorage — этого достаточно, чтобы платформа
- * работала без авторизации. На этапе 2 источником станет БД, а этот
- * модуль останется единственным местом, которое придётся переписать.
+ * Прогресс ученика: решённые задачи и прочитанные уроки.
+ * Единственное место, которое знает, где прогресс хранится —
+ * компоненты получают уже готовые списки.
  */
 
-const LESSONS_KEY = "fabel:lessons-read";
-const TASKS_KEY = "fabel:tasks-solved";
-const CHANGE_EVENT = "fabel:progress-changed";
+export type UserProgress = {
+  solvedTasks: string[];
+  readLessons: string[];
+};
 
-function readSet(key: string): Set<string> {
-  if (typeof window === "undefined") return new Set();
-  try {
-    const raw = window.localStorage.getItem(key);
-    const parsed: unknown = raw ? JSON.parse(raw) : [];
-    return Array.isArray(parsed) ? new Set(parsed.filter((v): v is string => typeof v === "string")) : new Set();
-  } catch {
-    return new Set();
-  }
-}
+export const EMPTY_PROGRESS: UserProgress = { solvedTasks: [], readLessons: [] };
 
-function writeSet(key: string, values: Set<string>): void {
-  try {
-    window.localStorage.setItem(key, JSON.stringify([...values]));
-  } catch {
-    // приватный режим — прогресс просто не сохранится
-  }
-  window.dispatchEvent(new Event(CHANGE_EVENT));
-}
+export async function getUserProgress(userId: string): Promise<UserProgress> {
+  const db = await getDb();
 
-export function getReadLessons(): Set<string> {
-  return readSet(LESSONS_KEY);
-}
+  const [solvedRows, lessonRows] = await Promise.all([
+    db
+      .selectDistinct({ taskSlug: submissions.taskSlug })
+      .from(submissions)
+      .where(and(eq(submissions.userId, userId), eq(submissions.passed, true))),
+    db
+      .select({ lessonId: lessonProgress.lessonId })
+      .from(lessonProgress)
+      .where(eq(lessonProgress.userId, userId)),
+  ]);
 
-export function getSolvedTasks(): Set<string> {
-  return readSet(TASKS_KEY);
-}
-
-export function markLessonRead(id: string): void {
-  const lessons = readSet(LESSONS_KEY);
-  if (lessons.has(id)) return;
-  lessons.add(id);
-  writeSet(LESSONS_KEY, lessons);
-}
-
-export function markTaskSolved(slug: string): void {
-  const tasks = readSet(TASKS_KEY);
-  if (tasks.has(slug)) return;
-  tasks.add(slug);
-  writeSet(TASKS_KEY, tasks);
-}
-
-/** Подписка на изменения прогресса внутри вкладки */
-export function subscribeToProgress(listener: () => void): () => void {
-  window.addEventListener(CHANGE_EVENT, listener);
-  window.addEventListener("storage", listener);
-  return () => {
-    window.removeEventListener(CHANGE_EVENT, listener);
-    window.removeEventListener("storage", listener);
+  return {
+    solvedTasks: solvedRows.map((row) => row.taskSlug),
+    readLessons: lessonRows.map((row) => row.lessonId),
   };
+}
+
+export async function recordSubmission(input: {
+  userId: string;
+  taskSlug: string;
+  code: string;
+  passed: boolean;
+}): Promise<void> {
+  const db = await getDb();
+  await db.insert(submissions).values(input);
+}
+
+export async function markLessonRead(userId: string, lessonId: string): Promise<void> {
+  const db = await getDb();
+  await db
+    .insert(lessonProgress)
+    .values({ userId, lessonId })
+    .onConflictDoNothing({ target: [lessonProgress.userId, lessonProgress.lessonId] });
 }

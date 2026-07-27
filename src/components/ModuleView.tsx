@@ -1,26 +1,15 @@
-"use client";
-
 import Link from "next/link";
 import { ProgressBar } from "@/components/ProgressBar";
-import { useProgress } from "@/hooks/useProgress";
 import type { Module, Step } from "@/lib/content/types";
+import type { UserProgress } from "@/lib/progress";
 
 type Props = {
   module: Module;
   steps: Step[];
+  progress: UserProgress;
 };
 
-function StepRow({
-  step,
-  index,
-  done,
-  locked,
-}: {
-  step: Step;
-  index: number;
-  done: boolean;
-  locked: boolean;
-}) {
+function StepRow({ step, index, done }: { step: Step; index: number; done: boolean }) {
   return (
     <li>
       <Link
@@ -39,33 +28,26 @@ function StepRow({
           {done ? "✓" : index}
         </span>
 
-        <span className="min-w-0 flex-1">
-          <span className="block truncate text-[14.5px] text-text">{step.title}</span>
-        </span>
+        <span className="min-w-0 flex-1 truncate text-[14.5px] text-text">{step.title}</span>
 
         <span
           className={`shrink-0 rounded-full px-2.5 py-0.5 text-[11px] font-medium ${
-            step.kind === "task"
-              ? "bg-accent-soft text-accent-strong"
-              : "bg-hover text-muted"
+            step.kind === "task" ? "bg-accent-soft text-accent-strong" : "bg-hover text-muted"
           }`}
         >
           {step.kind === "task" ? "задача" : "урок"}
         </span>
-
-        {locked && <span className="shrink-0 text-[11px] text-faint">по порядку</span>}
       </Link>
     </li>
   );
 }
 
-export function ModuleView({ module, steps }: Props) {
-  const progress = useProgress();
+export function ModuleView({ module, steps, progress }: Props) {
+  const solved = new Set(progress.solvedTasks);
+  const read = new Set(progress.readLessons);
 
-  const isDone = (step: Step) =>
-    step.kind === "lesson" ? progress.lessons.has(step.id) : progress.tasks.has(step.id);
+  const isDone = (step: Step) => (step.kind === "lesson" ? read.has(step.id) : solved.has(step.id));
 
-  const doneCount = progress.ready ? steps.filter(isDone).length : 0;
   const lessonSteps = steps.filter((step) => step.kind === "lesson");
   const taskSteps = steps.filter((step) => step.kind === "task");
 
@@ -78,7 +60,7 @@ export function ModuleView({ module, steps }: Props) {
       <h1 className="mb-2 text-2xl font-semibold tracking-tight text-text">{module.title}</h1>
       <p className="mb-5 max-w-2xl text-[14px] leading-relaxed text-muted">{module.description}</p>
 
-      <ProgressBar done={doneCount} total={steps.length} className="mb-9 max-w-xs" />
+      <ProgressBar done={steps.filter(isDone).length} total={steps.length} className="mb-9 max-w-xs" />
 
       <section className="mb-8">
         <h2 className="mb-3 text-[12px] font-semibold uppercase tracking-wider text-faint">
@@ -86,7 +68,7 @@ export function ModuleView({ module, steps }: Props) {
         </h2>
         <ul className="space-y-2">
           {lessonSteps.map((step, index) => (
-            <StepRow key={step.id} step={step} index={index + 1} done={isDone(step)} locked={false} />
+            <StepRow key={step.id} step={step} index={index + 1} done={isDone(step)} />
           ))}
         </ul>
       </section>
@@ -102,7 +84,6 @@ export function ModuleView({ module, steps }: Props) {
               step={step}
               index={lessonSteps.length + index + 1}
               done={isDone(step)}
-              locked={false}
             />
           ))}
         </ul>

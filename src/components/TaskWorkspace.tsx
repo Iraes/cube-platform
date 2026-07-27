@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { CodeEditor } from "@/components/CodeEditor";
 import { ConsolePanel } from "@/components/ConsolePanel";
@@ -8,33 +9,29 @@ import { TaskDescription } from "@/components/TaskDescription";
 import { runCode } from "@/lib/runner";
 import type { RunMode, RunResult, Task } from "@/lib/runner/types";
 import type { Step } from "@/lib/content/types";
-import { getSolvedTasks, markTaskSolved, subscribeToProgress } from "@/lib/progress";
+import { postSubmission } from "@/lib/progressClient";
 
 type Props = {
   task: Task;
+  solved: boolean;
   moduleSlug?: string;
   moduleTitle?: string;
   nextStep?: Step;
 };
 
-export function TaskWorkspace({ task, moduleSlug, moduleTitle, nextStep }: Props) {
+export function TaskWorkspace({ task, solved, moduleSlug, moduleTitle, nextStep }: Props) {
+  const router = useRouter();
   const [code, setCode] = useState(task.starterCode);
   const [result, setResult] = useState<RunResult | null>(null);
   const [mode, setMode] = useState<RunMode | null>(null);
   const [running, setRunning] = useState(false);
-  const [solved, setSolved] = useState(false);
+  const [saveFailed, setSaveFailed] = useState(false);
 
   // Актуальный код для обработчиков, которые создаются один раз.
   // Обновляется синхронно с вводом: между правкой и запуском может не быть
   // ни одного рендера (Ctrl+Enter сразу после набора кода).
   const codeRef = useRef(code);
   const runningRef = useRef(false);
-
-  useEffect(() => {
-    const sync = () => setSolved(getSolvedTasks().has(task.slug));
-    sync();
-    return subscribeToProgress(sync);
-  }, [task.slug]);
 
   const handleCodeChange = useCallback((next: string) => {
     codeRef.current = next;
@@ -48,24 +45,39 @@ export function TaskWorkspace({ task, moduleSlug, moduleTitle, nextStep }: Props
       setRunning(true);
       setMode(nextMode);
       setResult(null);
+      setSaveFailed(false);
 
       try {
-        const runResult = await runCode(codeRef.current, task, { mode: nextMode });
+        const submitted = codeRef.current;
+        const runResult = await runCode(submitted, task, { mode: nextMode });
         setResult(runResult);
 
+        if (nextMode !== "submit") return;
+
         const passedAll =
-          nextMode === "submit" &&
           !runResult.error &&
           runResult.results.length > 0 &&
           runResult.results.every((item) => item.passed);
 
-        if (passedAll) markTaskSolved(task.slug);
+        const saved = await postSubmission({
+          taskSlug: task.slug,
+          code: submitted,
+          passed: passedAll,
+        });
+
+        if (!saved) {
+          setSaveFailed(true);
+          return;
+        }
+
+        // Отметка «решено» приходит с сервера — перечитываем страницу
+        if (passedAll && !solved) router.refresh();
       } finally {
         runningRef.current = false;
         setRunning(false);
       }
     },
-    [task],
+    [task, solved, router],
   );
 
   const handleReset = useCallback(() => {
@@ -75,7 +87,7 @@ export function TaskWorkspace({ task, moduleSlug, moduleTitle, nextStep }: Props
     setMode(null);
   }, [task]);
 
-  // Ctrl+Enter работает и когда фокус вне редактора
+  // Ctrl+Enter — запустить, Ctrl+Shift+Enter — отправить на проверку
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
@@ -102,7 +114,7 @@ export function TaskWorkspace({ task, moduleSlug, moduleTitle, nextStep }: Props
         task={task}
         moduleSlug={moduleSlug}
         moduleTitle={moduleTitle}
-        solved={solved}
+        solved={solved || justSolved}
       />
 
       <section className="flex h-[460px] min-h-0 flex-col bg-surface lg:h-full">
@@ -139,6 +151,12 @@ export function TaskWorkspace({ task, moduleSlug, moduleTitle, nextStep }: Props
             Ctrl+Enter · Ctrl+Shift+Enter
           </span>
         </div>
+
+        {saveFailed && (
+          <div className="shrink-0 border-b border-border bg-err-soft px-3 py-2 text-[12.5px] text-err">
+            Результат проверен, но не сохранился на сервере — проверьте соединение
+          </div>
+        )}
 
         {justSolved && (
           <div className="flex shrink-0 flex-wrap items-center gap-3 border-b border-border bg-ok-soft px-3 py-2">

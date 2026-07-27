@@ -2,17 +2,18 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState, useTransition } from "react";
 import { Markdown } from "@/components/Markdown";
 import { VideoEmbed } from "@/components/VideoEmbed";
 import type { Lesson, Step } from "@/lib/content/types";
-import { getReadLessons, markLessonRead, subscribeToProgress } from "@/lib/progress";
+import { postLessonRead } from "@/lib/progressClient";
 
 type Props = {
   moduleSlug: string;
   moduleTitle: string;
   lesson: Lesson;
   lessonId: string;
+  read: boolean;
   /** Следующий шаг модуля: урок или первая задача */
   nextStep?: Step;
   position: { index: number; total: number };
@@ -23,21 +24,25 @@ export function LessonView({
   moduleTitle,
   lesson,
   lessonId,
+  read,
   nextStep,
   position,
 }: Props) {
   const router = useRouter();
-  const [read, setRead] = useState(false);
-
-  useEffect(() => {
-    const sync = () => setRead(getReadLessons().has(lessonId));
-    sync();
-    return subscribeToProgress(sync);
-  }, [lessonId]);
+  const [pending, startTransition] = useTransition();
+  const [failed, setFailed] = useState(false);
 
   const goNext = () => {
-    markLessonRead(lessonId);
-    router.push(nextStep ? nextStep.href : `/modules/${moduleSlug}`);
+    setFailed(false);
+    startTransition(async () => {
+      const saved = await postLessonRead(lessonId);
+      if (!saved) {
+        setFailed(true);
+        return;
+      }
+      router.push(nextStep ? nextStep.href : `/modules/${moduleSlug}`);
+      router.refresh();
+    });
   };
 
   return (
@@ -71,9 +76,7 @@ export function LessonView({
           }
 
           if (block.type === "video") {
-            return (
-              <VideoEmbed key={index} url={block.url} title={block.title} note={block.note} />
-            );
+            return <VideoEmbed key={index} url={block.url} title={block.title} note={block.note} />;
           }
 
           return (
@@ -99,20 +102,29 @@ export function LessonView({
         })}
       </div>
 
-      <div className="mt-10 flex items-center gap-3 border-t border-border pt-6">
+      <div className="mt-10 flex flex-wrap items-center gap-3 border-t border-border pt-6">
         <button
           type="button"
           onClick={goNext}
-          className="h-9 rounded-md bg-accent px-5 text-[14px] font-semibold text-accent-fg transition-colors hover:bg-accent-strong"
+          disabled={pending}
+          className="h-9 rounded-md bg-accent px-5 text-[14px] font-semibold text-accent-fg transition-colors hover:bg-accent-strong disabled:opacity-60"
         >
-          {nextStep
-            ? nextStep.kind === "task"
-              ? "Прочитано, перейти к задачам →"
-              : "Прочитано, следующий урок →"
-            : "Прочитано, к модулю →"}
+          {pending
+            ? "Сохраняем…"
+            : nextStep
+              ? nextStep.kind === "task"
+                ? "Прочитано, перейти к задачам →"
+                : "Прочитано, следующий урок →"
+              : "Прочитано, к модулю →"}
         </button>
 
-        {nextStep && <span className="text-[13px] text-faint">Дальше: {nextStep.title}</span>}
+        {nextStep && !pending && <span className="text-[13px] text-faint">Дальше: {nextStep.title}</span>}
+
+        {failed && (
+          <span className="text-[13px] text-err">
+            Не удалось сохранить прогресс — проверьте соединение и попробуйте ещё раз
+          </span>
+        )}
       </div>
     </main>
   );

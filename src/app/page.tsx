@@ -1,7 +1,12 @@
 import { ModulesList, type ModuleCard } from "@/components/ModulesList";
 import { getSteps, modules } from "@/lib/content";
+import { getUserProgress } from "@/lib/progress";
+import { requireUser } from "@/lib/session";
 
-export default function Home() {
+export default async function Home() {
+  const user = await requireUser();
+  const progress = await getUserProgress(user.id);
+
   const cards: ModuleCard[] = modules.map((module) => ({
     slug: module.slug,
     title: module.title,
@@ -19,7 +24,7 @@ export default function Home() {
         пройденному. Код выполняется прямо в браузере.
       </p>
 
-      <ModulesList modules={cards} />
+      <ModulesList modules={cards} progress={progress} />
     </main>
   );
 }

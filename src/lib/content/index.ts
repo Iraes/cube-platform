@@ -54,6 +54,13 @@ export function getModuleForTask(taskSlug: string): Module | undefined {
   return modules.find((module) => module.taskSlugs.includes(taskSlug));
 }
 
+/** Существует ли такой урок — проверка данных, пришедших от клиента */
+export function isKnownLessonId(id: string): boolean {
+  return modules.some((module) =>
+    module.lessons.some((lesson) => lessonId(module.slug, lesson.slug) === id),
+  );
+}
+
 export function getAllLessonParams(): { slug: string; lessonSlug: string }[] {
   return modules.flatMap((module) =>
     module.lessons.map((lesson) => ({ slug: module.slug, lessonSlug: lesson.slug })),
