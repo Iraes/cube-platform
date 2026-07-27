@@ -1,5 +1,12 @@
 import "./env";
-import { createUser, deleteUser, getUserByEmail, listUsers, setUserPassword } from "@/lib/db/users";
+import {
+  createUser,
+  deleteUser,
+  getUserByEmail,
+  listUsers,
+  setUserPassword,
+  setUserRoleByEmail,
+} from "@/lib/db/users";
 
 /**
  * Заведение учётных записей владельцем: регистрации на сайте нет.
@@ -47,6 +54,23 @@ async function main() {
 
   const email = typeof args.email === "string" ? args.email : "";
   const password = typeof args.password === "string" ? args.password : "";
+  const requestedRole =
+    args.role === "teacher" ? "teacher" : args.role === "admin" ? "admin" : undefined;
+
+  // Смена роли без пароля: так назначается первый администратор
+  if (args.role && !password) {
+    if (!email || !requestedRole) {
+      console.error(
+        "Укажите логин и роль: npm run user:role -- --email ivan@example.com --role admin",
+      );
+      process.exit(1);
+    }
+    const changed = await setUserRoleByEmail(email, requestedRole);
+    console.log(
+      changed ? `Роль ${email} изменена на ${requestedRole}` : `Пользователь ${email} не найден`,
+    );
+    return;
+  }
 
   if (args.delete) {
     if (!email) {
@@ -63,7 +87,7 @@ async function main() {
   }
 
   const name = typeof args.name === "string" ? args.name : undefined;
-  const role = args.role === "teacher" ? "teacher" : "student";
+  const role = requestedRole ?? "student";
 
   if (!email || !password) {
     console.error(

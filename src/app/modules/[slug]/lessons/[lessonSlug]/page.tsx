@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { LessonView } from "@/components/LessonView";
-import { getLesson, getModule, getNextStep, lessonId } from "@/lib/content";
+import { findLesson, getModuleBySlug, getNextStep } from "@/lib/content";
 import { getUserProgress } from "@/lib/progress";
 import { requireUser } from "@/lib/session";
 
@@ -10,7 +10,8 @@ export async function generateMetadata({
   params: Promise<{ slug: string; lessonSlug: string }>;
 }) {
   const { slug, lessonSlug } = await params;
-  const lesson = getLesson(slug, lessonSlug);
+  const module = await getModuleBySlug(slug);
+  const lesson = module ? findLesson(module, lessonSlug) : undefined;
   return { title: lesson ? `${lesson.title} — Cube` : "Урок не найден — Cube" };
 }
 
@@ -21,13 +22,12 @@ export default async function LessonPage({
 }) {
   const user = await requireUser();
   const { slug, lessonSlug } = await params;
-  const module = getModule(slug);
-  const lesson = getLesson(slug, lessonSlug);
+  const module = await getModuleBySlug(slug);
+  const lesson = module ? findLesson(module, lessonSlug) : undefined;
 
   if (!module || !lesson) notFound();
 
-  const id = lessonId(module.slug, lesson.slug);
-  const index = module.lessons.findIndex((item) => item.slug === lesson.slug);
+  const index = module.lessons.findIndex((item) => item.id === lesson.id);
   const progress = await getUserProgress(user.id);
 
   return (
@@ -35,9 +35,9 @@ export default async function LessonPage({
       moduleSlug={module.slug}
       moduleTitle={module.title}
       lesson={lesson}
-      lessonId={id}
-      read={progress.readLessons.includes(id)}
-      nextStep={getNextStep(module, id)}
+      lessonId={lesson.id}
+      read={progress.readLessons.includes(lesson.id)}
+      nextStep={getNextStep(module, lesson.id)}
       position={{ index: index + 1, total: module.lessons.length }}
     />
   );

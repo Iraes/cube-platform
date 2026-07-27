@@ -18,8 +18,10 @@ export default async function TaskPage({ params }: { params: Promise<{ slug: str
 
   if (!task) notFound();
 
-  const module = getModuleForTask(slug);
-  const progress = await getUserProgress(user.id);
+  const [module, progress] = await Promise.all([
+    getModuleForTask(slug),
+    getUserProgress(user.id),
+  ]);
 
   return (
     <TaskWorkspace

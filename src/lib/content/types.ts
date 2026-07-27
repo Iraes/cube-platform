@@ -1,6 +1,6 @@
 /**
- * Учебные материалы. Как и задачи, хранятся файлами в репозитории:
- * добавить урок = добавить объект и закоммитить.
+ * Учебные материалы. Хранятся в БД и редактируются в админке;
+ * файлы в `seed/` — только стартовое наполнение при первом запуске.
  */
 
 export type LessonBlock =
@@ -11,7 +11,10 @@ export type LessonBlock =
   /** Ссылка на внешнюю статью — открывается в новой вкладке */
   | { type: "article"; url: string; title: string; source?: string; note?: string };
 
+export type LessonBlockType = LessonBlock["type"];
+
 export type Lesson = {
+  id: string;
   slug: string;
   title: string;
   summary: string;
@@ -19,6 +22,7 @@ export type Lesson = {
 };
 
 export type Module = {
+  id: string;
   slug: string;
   title: string;
   description: string;
@@ -32,3 +36,12 @@ export type Module = {
 export type Step =
   | { kind: "lesson"; id: string; title: string; href: string }
   | { kind: "task"; id: string; title: string; href: string };
+
+/** Форма стартовых данных: то же, но без идентификаторов из БД */
+export type SeedModule = {
+  slug: string;
+  title: string;
+  description: string;
+  lessons: { slug: string; title: string; summary: string; blocks: LessonBlock[] }[];
+  taskSlugs: string[];
+};

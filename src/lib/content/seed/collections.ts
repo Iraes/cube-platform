@@ -1,6 +1,6 @@
-import type { Module } from "@/lib/content/types";
+import type { SeedModule } from "@/lib/content/types";
 
-export const collections: Module = {
+export const collections: SeedModule = {
   slug: "collections",
   title: "Массивы и объекты",
   description:

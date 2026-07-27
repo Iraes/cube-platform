@@ -19,6 +19,15 @@ export async function Header() {
 
       <ThemeSelect />
 
+      {user?.role === "admin" && (
+        <Link
+          href="/admin"
+          className="rounded-md border border-border px-3 py-1.5 text-[13px] text-muted transition-colors hover:bg-hover hover:text-text"
+        >
+          Управление
+        </Link>
+      )}
+
       {user && (
         <div className="flex items-center gap-3 border-l border-border pl-4">
           <span className="max-w-40 truncate text-[13px] text-muted" title={user.email}>

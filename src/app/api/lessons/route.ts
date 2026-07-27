@@ -17,7 +17,7 @@ export async function POST(request: Request) {
 
   const { lessonId } = (payload ?? {}) as { lessonId?: unknown };
 
-  if (typeof lessonId !== "string" || !isKnownLessonId(lessonId)) {
+  if (typeof lessonId !== "string" || !(await isKnownLessonId(lessonId))) {
     return Response.json({ error: "Неизвестный урок" }, { status: 400 });
   }
 

@@ -1,6 +1,6 @@
-import type { Module } from "@/lib/content/types";
+import type { SeedModule } from "@/lib/content/types";
 
-export const jsBasics: Module = {
+export const jsBasics: SeedModule = {
   slug: "js-basics",
   title: "Основы JavaScript",
   description:

@@ -1,4 +1,16 @@
-import { boolean, index, pgTable, primaryKey, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import {
+  boolean,
+  index,
+  integer,
+  jsonb,
+  pgTable,
+  primaryKey,
+  text,
+  timestamp,
+  uniqueIndex,
+  uuid,
+} from "drizzle-orm/pg-core";
+import type { LessonBlock } from "@/lib/content/types";
 
 /**
  * Учётные записи заводит владелец: регистрации на сайте нет.
@@ -9,8 +21,10 @@ export const users = pgTable("users", {
   email: text("email").notNull().unique(),
   name: text("name"),
   passwordHash: text("password_hash").notNull(),
-  // teacher пригодится на этапе 4 (трекер задач)
-  role: text("role", { enum: ["student", "teacher"] }).notNull().default("student"),
+  // admin — доступ к разделу /admin; teacher пригодится на этапе 4 (трекер)
+  role: text("role", { enum: ["student", "teacher", "admin"] })
+    .notNull()
+    .default("student"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
@@ -34,8 +48,59 @@ export const submissions = pgTable(
 );
 
 /**
- * Прочитанные уроки. Появилось вместе с учебными модулями:
- * у материалов свой прогресс, наравне с решёнными задачами.
+ * Учебные модули. Раньше лежали файлами в репозитории; переехали в БД,
+ * чтобы владелец редактировал их в админке без правки кода и деплоя.
+ */
+export const modules = pgTable("modules", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  slug: text("slug").notNull().unique(),
+  title: text("title").notNull(),
+  description: text("description").notNull().default(""),
+  position: integer("position").notNull().default(0),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+/**
+ * Урок — страница с материалами. Блоки (текст, видео, ссылки на статьи)
+ * хранятся одним JSONB: урок правится целиком одной формой, а отдельная
+ * таблица блоков дала бы лишнюю возню с порядком.
+ */
+export const lessons = pgTable(
+  "lessons",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    moduleId: uuid("module_id")
+      .notNull()
+      .references(() => modules.id, { onDelete: "cascade" }),
+    slug: text("slug").notNull(),
+    title: text("title").notNull(),
+    summary: text("summary").notNull().default(""),
+    position: integer("position").notNull().default(0),
+    blocks: jsonb("blocks").$type<LessonBlock[]>().notNull().default([]),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [uniqueIndex("lessons_module_slug_idx").on(table.moduleId, table.slug)],
+);
+
+/**
+ * Какие задачи входят в модуль и в каком порядке.
+ * Сами задачи остаются файлами в репозитории — здесь только ссылка по slug.
+ */
+export const moduleTasks = pgTable(
+  "module_tasks",
+  {
+    moduleId: uuid("module_id")
+      .notNull()
+      .references(() => modules.id, { onDelete: "cascade" }),
+    taskSlug: text("task_slug").notNull(),
+    position: integer("position").notNull().default(0),
+  },
+  (table) => [primaryKey({ columns: [table.moduleId, table.taskSlug] })],
+);
+
+/**
+ * Прочитанные уроки. lessonId ссылается на lessons.id, поэтому
+ * переименование урока не сбрасывает прогресс.
  */
 export const lessonProgress = pgTable(
   "lesson_progress",
@@ -50,3 +115,5 @@ export const lessonProgress = pgTable(
 );
 
 export type UserRow = typeof users.$inferSelect;
+export type ModuleRow = typeof modules.$inferSelect;
+export type LessonRow = typeof lessons.$inferSelect;

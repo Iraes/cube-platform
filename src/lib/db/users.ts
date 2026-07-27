@@ -17,7 +17,7 @@ export async function createUser(input: {
   email: string;
   password: string;
   name?: string;
-  role?: "student" | "teacher";
+  role?: "student" | "teacher" | "admin";
 }): Promise<UserRow> {
   const db = await getDb();
 
@@ -44,6 +44,38 @@ export async function setUserPassword(email: string, password: string): Promise<
     .returning({ id: users.id });
 
   return updated.length > 0;
+}
+
+export async function setUserRoleByEmail(
+  email: string,
+  role: "student" | "teacher" | "admin",
+): Promise<boolean> {
+  const db = await getDb();
+  const updated = await db
+    .update(users)
+    .set({ role })
+    .where(eq(users.email, normalizeEmail(email)))
+    .returning({ id: users.id });
+
+  return updated.length > 0;
+}
+
+export async function setUserRole(
+  id: string,
+  role: "student" | "teacher" | "admin",
+): Promise<void> {
+  const db = await getDb();
+  await db.update(users).set({ role }).where(eq(users.id, id));
+}
+
+export async function deleteUserById(id: string): Promise<void> {
+  const db = await getDb();
+  await db.delete(users).where(eq(users.id, id));
+}
+
+export async function setPasswordById(id: string, password: string): Promise<void> {
+  const db = await getDb();
+  await db.update(users).set({ passwordHash: await hashPassword(password) }).where(eq(users.id, id));
 }
 
 export async function deleteUser(email: string): Promise<boolean> {

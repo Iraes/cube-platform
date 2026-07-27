@@ -1,11 +1,11 @@
 import { ModulesList, type ModuleCard } from "@/components/ModulesList";
-import { getSteps, modules } from "@/lib/content";
+import { getModules, getSteps } from "@/lib/content";
 import { getUserProgress } from "@/lib/progress";
 import { requireUser } from "@/lib/session";
 
 export default async function Home() {
   const user = await requireUser();
-  const progress = await getUserProgress(user.id);
+  const [modules, progress] = await Promise.all([getModules(), getUserProgress(user.id)]);
 
   const cards: ModuleCard[] = modules.map((module) => ({
     slug: module.slug,
@@ -24,7 +24,13 @@ export default async function Home() {
         пройденному. Код выполняется прямо в браузере.
       </p>
 
-      <ModulesList modules={cards} progress={progress} />
+      {cards.length === 0 ? (
+        <p className="rounded-lg border border-dashed border-border bg-surface p-6 text-[13.5px] text-faint">
+          Модулей пока нет. Их добавляет владелец платформы в разделе управления.
+        </p>
+      ) : (
+        <ModulesList modules={cards} progress={progress} />
+      )}
     </main>
   );
 }

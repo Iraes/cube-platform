@@ -1,11 +1,13 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 
+export type UserRole = "student" | "teacher" | "admin";
+
 export type SessionUser = {
   id: string;
   email: string;
   name: string | null;
-  role: "student" | "teacher";
+  role: UserRole;
 };
 
 export async function getSessionUser(): Promise<SessionUser | null> {
@@ -24,5 +26,15 @@ export async function getSessionUser(): Promise<SessionUser | null> {
 export async function requireUser(): Promise<SessionUser> {
   const user = await getSessionUser();
   if (!user) redirect("/login");
+  return user;
+}
+
+/**
+ * Для раздела управления. Проверка роли живёт на сервере: прятать кнопки
+ * в интерфейсе недостаточно, страницы и действия должны отказывать сами.
+ */
+export async function requireAdmin(): Promise<SessionUser> {
+  const user = await requireUser();
+  if (user.role !== "admin") redirect("/");
   return user;
 }

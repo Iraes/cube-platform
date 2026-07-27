@@ -62,8 +62,9 @@ export const myTask: AlgorithmTask = {
 
 От ученика всегда ждут функцию с именем `solution`; её вызывают ровно один раз на тест.
 
-**Модуль с уроками** — файл в [`src/lib/content/modules`](src/lib/content/modules) и строка
-в [`src/lib/content/index.ts`](src/lib/content/index.ts). Урок собирается из блоков:
+**Модуль с уроками** — через админку `/admin/modules`, править код не нужно.
+Файлы в [`src/lib/content/seed`](src/lib/content/seed) — только стартовое
+наполнение для `npm run db:seed`. Урок собирается из блоков:
 
 ```ts
 blocks: [
@@ -100,9 +101,12 @@ blocks: [
 ученику. Вход — Auth.js (NextAuth v5) с Credentials-провайдером, сессии в JWT,
 пароли хранятся как scrypt-хеш (`scrypt:<соль>:<хеш>`, без внешних библиотек).
 
+Обычно учётки заводят в админке. Из консоли — когда админа ещё нет:
+
 ```bash
 npm run user:add -- --email ivan@example.com --password "секрет" --name Иван
 npm run user:add -- --email ivan@example.com --password "новый" --reset   # смена пароля
+npm run user:role -- --email ivan@example.com --role admin               # первый администратор
 npm run user:delete -- --email ivan@example.com                          # вместе с прогрессом
 npm run user:list
 ```
@@ -111,15 +115,35 @@ npm run user:list
 из [`src/lib/session.ts`](src/lib/session.ts). API-роуты проверяют сессию
 самостоятельно и отвечают 401 без неё.
 
+**Роль лежит в JWT**, поэтому после её смены пользователь должен выйти и войти
+заново — иначе сессия останется со старыми правами.
+
+## Админка
+
+Раздел `/admin` доступен роли `admin`, ссылка появляется в шапке. Проверка
+роли — `requireAdmin()` на каждой странице и в каждом серверном действии:
+прятать кнопки в интерфейсе недостаточно.
+
+Что можно делать: заводить и удалять учеников, менять им пароли и роли;
+создавать модули, писать уроки (блоки текста, видео и ссылок на статьи),
+менять порядок; собирать в модуль задачи из готового списка.
+
+Задачи остаются файлами: у них проверки — это код, и веб-форма для него плохой
+инструмент. В админке задача только привязывается к модулю.
+
 ## База данных и прогресс
 
-Postgres через Drizzle. Три таблицы: `users`, `submissions` (история отправок
-на проверку) и `lesson_progress` (прочитанные уроки). «Решено» — это наличие
-записи в `submissions` с `passed = true`, отдельной таблицы прогресса нет.
+Postgres через Drizzle. Таблицы: `users`, `submissions` (история отправок
+на проверку), `lesson_progress` (прочитанные уроки), `modules`, `lessons`
+и `module_tasks` (учебные материалы). «Решено» — это наличие записи
+в `submissions` с `passed = true`, отдельной таблицы прогресса нет.
+Блоки урока лежат в `lessons.blocks` одним JSONB: урок правится целиком
+одной формой.
 
 ```bash
 npm run db:generate   # SQL-миграции из схемы
 npm run db:migrate    # накатить их
+npm run db:seed       # первичное наполнение из src/lib/content/seed
 ```
 
 Переменные окружения — см. [.env.example](.env.example). С `DATABASE_URL`

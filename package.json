@@ -10,8 +10,10 @@
     "typecheck": "tsc --noEmit",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx scripts/migrate.ts",
+    "db:seed": "tsx scripts/seed-content.ts",
     "user:add": "tsx scripts/add-user.ts",
     "user:delete": "tsx scripts/add-user.ts --delete",
+    "user:role": "tsx scripts/add-user.ts",
     "user:list": "tsx scripts/add-user.ts --list"
   },
   "dependencies": {
