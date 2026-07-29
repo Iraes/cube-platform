@@ -32,6 +32,7 @@ export function ModulesList({ modules, progress }: Props) {
         <li key={module.slug}>
           <Link
             href={`/modules/${module.slug}`}
+            prefetch={false}
             className="block rounded-lg border border-border bg-surface p-5 transition-colors hover:border-accent hover:bg-surface-2"
           >
             <div className="mb-1.5 flex items-baseline gap-3">

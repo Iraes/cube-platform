@@ -17,9 +17,18 @@ type Props = {
   moduleSlug?: string;
   moduleTitle?: string;
   nextStep?: Step;
+  /** Демо-доступ: код запускается и проверяется, но результат не сохраняется */
+  isDemo?: boolean;
 };
 
-export function TaskWorkspace({ task, solved, moduleSlug, moduleTitle, nextStep }: Props) {
+export function TaskWorkspace({
+  task,
+  solved,
+  moduleSlug,
+  moduleTitle,
+  nextStep,
+  isDemo = false,
+}: Props) {
   const router = useRouter();
   const [code, setCode] = useState(task.starterCode);
   const [result, setResult] = useState<RunResult | null>(null);
@@ -59,6 +68,9 @@ export function TaskWorkspace({ task, solved, moduleSlug, moduleTitle, nextStep 
           runResult.results.length > 0 &&
           runResult.results.every((item) => item.passed);
 
+        // В демо проверки честные, но сохранять результат некуда — аккаунта нет
+        if (isDemo) return;
+
         const saved = await postSubmission({
           taskSlug: task.slug,
           code: submitted,
@@ -77,7 +89,7 @@ export function TaskWorkspace({ task, solved, moduleSlug, moduleTitle, nextStep 
         setRunning(false);
       }
     },
-    [task, solved, router],
+    [task, solved, router, isDemo],
   );
 
   const handleReset = useCallback(() => {
@@ -115,6 +127,7 @@ export function TaskWorkspace({ task, solved, moduleSlug, moduleTitle, nextStep 
         moduleSlug={moduleSlug}
         moduleTitle={moduleTitle}
         solved={solved || justSolved}
+        isDemo={isDemo}
       />
 
       <section className="flex h-[460px] min-h-0 flex-col bg-surface lg:h-full">
@@ -160,7 +173,9 @@ export function TaskWorkspace({ task, solved, moduleSlug, moduleTitle, nextStep 
 
         {justSolved && (
           <div className="flex shrink-0 flex-wrap items-center gap-3 border-b border-border bg-ok-soft px-3 py-2">
-            <span className="text-[13px] font-semibold text-ok">Задача решена</span>
+            <span className="text-[13px] font-semibold text-ok">
+              {isDemo ? "Все проверки пройдены" : "Задача решена"}
+            </span>
             {nextStep ? (
               <Link
                 href={nextStep.href}
@@ -169,12 +184,12 @@ export function TaskWorkspace({ task, solved, moduleSlug, moduleTitle, nextStep 
                 Дальше: {nextStep.title} →
               </Link>
             ) : (
-              moduleSlug && (
+              (isDemo || moduleSlug) && (
                 <Link
-                  href={`/modules/${moduleSlug}`}
+                  href={isDemo ? "/demo" : `/modules/${moduleSlug}`}
                   className="text-[12.5px] text-ok underline underline-offset-2"
                 >
-                  Вернуться к модулю
+                  {isDemo ? "Вернуться к демо" : "Вернуться к модулю"}
                 </Link>
               )
             )}
@@ -187,7 +202,7 @@ export function TaskWorkspace({ task, solved, moduleSlug, moduleTitle, nextStep 
       </section>
 
       <div className="h-[430px] lg:h-full">
-        <ConsolePanel result={result} running={running} mode={mode} />
+        <ConsolePanel result={result} running={running} mode={mode} isDemo={isDemo} />
       </div>
     </main>
   );

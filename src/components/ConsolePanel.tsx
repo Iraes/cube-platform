@@ -7,6 +7,8 @@ type Props = {
   result: RunResult | null;
   running: boolean;
   mode: RunMode | null;
+  /** В демо проверки настоящие, но засчитывать результат некуда */
+  isDemo?: boolean;
 };
 
 function ErrorBlock({ error }: { error: NonNullable<RunResult["error"]> }) {
@@ -60,7 +62,7 @@ function TestRow({ result }: { result: RunResult["results"][number] }) {
   );
 }
 
-export function ConsolePanel({ result, running, mode }: Props) {
+export function ConsolePanel({ result, running, mode, isDemo = false }: Props) {
   const passed = result?.results.filter((item) => item.passed).length ?? 0;
   const total = result?.results.length ?? 0;
   const allPassed = total > 0 && passed === total && !result?.error;
@@ -133,7 +135,11 @@ export function ConsolePanel({ result, running, mode }: Props) {
           }`}
         >
           Пройдено {passed} из {total}
-          {allPassed ? (
+          {isDemo ? (
+            allPassed && (
+              <span className="ml-2 font-normal text-ok">— всё верно, но в демо не засчитывается</span>
+            )
+          ) : allPassed ? (
             <span className="ml-2 font-normal text-ok">— задача засчитана</span>
           ) : (
             <span className="ml-2 font-normal text-muted">— задача не засчитана</span>

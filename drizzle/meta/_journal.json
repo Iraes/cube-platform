@@ -15,6 +15,13 @@
       "when": 1785173463785,
       "tag": "0001_simple_mysterio",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1785221282018,
+      "tag": "0002_wonderful_skin",
+      "breakpoints": true
     }
   ]
 }

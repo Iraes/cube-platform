@@ -77,6 +77,8 @@ export const lessons = pgTable(
     summary: text("summary").notNull().default(""),
     position: integer("position").notNull().default(0),
     blocks: jsonb("blocks").$type<LessonBlock[]>().notNull().default([]),
+    // Виден ли урок в демо-доступе, без входа на платформу
+    isDemo: boolean("is_demo").notNull().default(false),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [uniqueIndex("lessons_module_slug_idx").on(table.moduleId, table.slug)],
@@ -94,6 +96,8 @@ export const moduleTasks = pgTable(
       .references(() => modules.id, { onDelete: "cascade" }),
     taskSlug: text("task_slug").notNull(),
     position: integer("position").notNull().default(0),
+    // Доступна ли задача в демо-доступе, без входа на платформу
+    isDemo: boolean("is_demo").notNull().default(false),
   },
   (table) => [primaryKey({ columns: [table.moduleId, table.taskSlug] })],
 );

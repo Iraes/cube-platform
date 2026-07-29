@@ -12,6 +12,8 @@ import {
   moveLesson,
   moveModule,
   moveTask,
+  setLessonDemo,
+  setTaskDemo,
   updateLesson,
   updateModule,
 } from "@/lib/db/content";
@@ -28,9 +30,24 @@ import type { LessonBlock } from "@/lib/content/types";
 
 export type ActionState = { error?: string; ok?: string };
 
-/** Все действия обновляют весь раздел: страниц немного, а связей между ними много */
-function refresh() {
-  revalidatePath("/", "layout");
+/**
+ * Сбрасываем кеш только там, где данные действительно поменялись.
+ * Раньше здесь был revalidatePath("/", "layout"): он обнулял кеш всех
+ * маршрутов сразу, и после каждого действия клиент заново тянул десяток
+ * страниц, каждую со своими запросами к базе.
+ */
+function refreshContent() {
+  revalidatePath("/", "page");
+  revalidatePath("/demo", "page");
+  revalidatePath("/admin/modules", "page");
+  revalidatePath("/modules/[slug]", "page");
+  revalidatePath("/modules/[slug]/lessons/[lessonSlug]", "page");
+  revalidatePath("/tasks/[slug]", "page");
+}
+
+function refreshUsers() {
+  revalidatePath("/admin", "page");
+  revalidatePath("/admin/users", "page");
 }
 
 function text(formData: FormData, key: string): string {
@@ -47,7 +64,7 @@ export async function createModuleAction(_prev: ActionState, formData: FormData)
   if (!title) return { error: "Введите название модуля" };
 
   const module = await createModule({ title, description: text(formData, "description") });
-  refresh();
+  refreshContent();
   redirect(`/admin/modules/${module.id}`);
 }
 
@@ -63,7 +80,7 @@ export async function updateModuleAction(_prev: ActionState, formData: FormData)
     description: text(formData, "description"),
     slug: text(formData, "slug"),
   });
-  refresh();
+  refreshContent();
   return { ok: "Сохранено" };
 }
 
@@ -72,7 +89,7 @@ export async function deleteModuleAction(formData: FormData): Promise<void> {
 
   const id = text(formData, "id");
   if (id) await deleteModule(id);
-  refresh();
+  refreshContent();
   redirect("/admin/modules");
 }
 
@@ -82,7 +99,7 @@ export async function moveModuleAction(formData: FormData): Promise<void> {
   const id = text(formData, "id");
   const direction = text(formData, "direction") === "up" ? "up" : "down";
   if (id) await moveModule(id, direction);
-  refresh();
+  refreshContent();
 }
 
 // ---------- Уроки ----------
@@ -95,7 +112,7 @@ export async function createLessonAction(formData: FormData): Promise<void> {
   if (!moduleId) return;
 
   const lesson = await createLesson(moduleId, title);
-  refresh();
+  refreshContent();
   redirect(`/admin/modules/${moduleId}/lessons/${lesson.id}`);
 }
 
@@ -155,7 +172,7 @@ export async function saveLessonAction(_prev: ActionState, formData: FormData): 
     blocks: parseBlocks(text(formData, "blocks")),
   });
 
-  refresh();
+  refreshContent();
   return { ok: "Урок сохранён" };
 }
 
@@ -165,7 +182,7 @@ export async function deleteLessonAction(formData: FormData): Promise<void> {
   const id = text(formData, "id");
   const moduleId = text(formData, "moduleId");
   if (id) await deleteLesson(id);
-  refresh();
+  refreshContent();
   redirect(`/admin/modules/${moduleId}`);
 }
 
@@ -175,7 +192,27 @@ export async function moveLessonAction(formData: FormData): Promise<void> {
   const id = text(formData, "id");
   const direction = text(formData, "direction") === "up" ? "up" : "down";
   if (id) await moveLesson(id, direction);
-  refresh();
+  refreshContent();
+}
+
+// ---------- Демо-доступ ----------
+
+/** Открыть или закрыть урок в демо: он станет виден без входа на платформу */
+export async function setLessonDemoAction(formData: FormData): Promise<void> {
+  await requireAdmin();
+
+  const id = text(formData, "id");
+  if (id) await setLessonDemo(id, text(formData, "isDemo") === "1");
+  refreshContent();
+}
+
+export async function setTaskDemoAction(formData: FormData): Promise<void> {
+  await requireAdmin();
+
+  const moduleId = text(formData, "moduleId");
+  const taskSlug = text(formData, "taskSlug");
+  if (moduleId && taskSlug) await setTaskDemo(moduleId, taskSlug, text(formData, "isDemo") === "1");
+  refreshContent();
 }
 
 // ---------- Задачи в модуле ----------
@@ -186,7 +223,7 @@ export async function attachTaskAction(formData: FormData): Promise<void> {
   const moduleId = text(formData, "moduleId");
   const taskSlug = text(formData, "taskSlug");
   if (moduleId && taskSlug && getTask(taskSlug)) await attachTask(moduleId, taskSlug);
-  refresh();
+  refreshContent();
 }
 
 export async function detachTaskAction(formData: FormData): Promise<void> {
@@ -195,7 +232,7 @@ export async function detachTaskAction(formData: FormData): Promise<void> {
   const moduleId = text(formData, "moduleId");
   const taskSlug = text(formData, "taskSlug");
   if (moduleId && taskSlug) await detachTask(moduleId, taskSlug);
-  refresh();
+  refreshContent();
 }
 
 export async function moveTaskAction(formData: FormData): Promise<void> {
@@ -205,7 +242,7 @@ export async function moveTaskAction(formData: FormData): Promise<void> {
   const taskSlug = text(formData, "taskSlug");
   const direction = text(formData, "direction") === "up" ? "up" : "down";
   if (moduleId && taskSlug) await moveTask(moduleId, taskSlug, direction);
-  refresh();
+  refreshContent();
 }
 
 // ---------- Пользователи ----------
@@ -224,7 +261,7 @@ export async function createUserAction(_prev: ActionState, formData: FormData): 
   if (await getUserByEmail(email)) return { error: "Такой логин уже занят" };
 
   await createUser({ email, password, name: name || undefined, role });
-  refresh();
+  refreshUsers();
   return { ok: `Пользователь ${email} создан` };
 }
 
@@ -238,7 +275,7 @@ export async function resetPasswordAction(_prev: ActionState, formData: FormData
   if (password.length < 8) return { error: "Пароль должен быть не короче 8 символов" };
 
   await setPasswordById(id, password);
-  refresh();
+  refreshUsers();
   return { ok: "Пароль обновлён" };
 }
 
@@ -251,7 +288,7 @@ export async function setRoleAction(formData: FormData): Promise<void> {
 
   // Себя понизить нельзя: иначе можно остаться без единого администратора
   if (id && id !== admin.id) await setUserRole(id, role);
-  refresh();
+  refreshUsers();
 }
 
 export async function deleteUserAction(formData: FormData): Promise<void> {
@@ -259,5 +296,5 @@ export async function deleteUserAction(formData: FormData): Promise<void> {
 
   const id = text(formData, "id");
   if (id && id !== admin.id) await deleteUserById(id);
-  refresh();
+  refreshUsers();
 }

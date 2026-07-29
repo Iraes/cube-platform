@@ -8,12 +8,23 @@ import {
   detachTaskAction,
   moveLessonAction,
   moveTaskAction,
+  setLessonDemoAction,
+  setTaskDemoAction,
 } from "@/lib/actions/admin";
 import { getModuleById } from "@/lib/content";
 import { getTask, tasks } from "@/lib/tasks";
 
 const arrowClass =
   "text-[11px] leading-none text-faint transition-colors hover:text-accent disabled:opacity-30";
+
+/** Переключатель «показывать в демо-доступе» */
+function demoClass(active: boolean) {
+  return `shrink-0 rounded-full px-2.5 py-0.5 text-[11.5px] font-medium transition-colors ${
+    active
+      ? "bg-ok-soft text-ok hover:opacity-80"
+      : "border border-border text-faint hover:border-accent hover:text-accent"
+  }`;
+}
 
 export default async function AdminModuleEditor({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -87,6 +98,22 @@ export default async function AdminModuleEditor({ params }: { params: Promise<{ 
                       : `блоков: ${lesson.blocks.length}`}
                   </span>
                 </Link>
+
+                <form action={setLessonDemoAction}>
+                  <input type="hidden" name="id" value={lesson.id} />
+                  <input type="hidden" name="isDemo" value={lesson.isDemo ? "0" : "1"} />
+                  <button
+                    type="submit"
+                    className={demoClass(lesson.isDemo)}
+                    title={
+                      lesson.isDemo
+                        ? "Урок открыт без входа — нажмите, чтобы убрать из демо"
+                        : "Показать урок в демо-доступе"
+                    }
+                  >
+                    {lesson.isDemo ? "✓ в демо" : "в демо"}
+                  </button>
+                </form>
               </li>
             ))}
           </ul>
@@ -156,6 +183,27 @@ export default async function AdminModuleEditor({ params }: { params: Promise<{ 
                 <span className="min-w-0 flex-1 truncate text-[14px] text-text">
                   {getTask(slug)?.title ?? slug}
                 </span>
+
+                <form action={setTaskDemoAction}>
+                  <input type="hidden" name="moduleId" value={module.id} />
+                  <input type="hidden" name="taskSlug" value={slug} />
+                  <input
+                    type="hidden"
+                    name="isDemo"
+                    value={module.demoTaskSlugs.includes(slug) ? "0" : "1"}
+                  />
+                  <button
+                    type="submit"
+                    className={demoClass(module.demoTaskSlugs.includes(slug))}
+                    title={
+                      module.demoTaskSlugs.includes(slug)
+                        ? "Задача открыта без входа — нажмите, чтобы убрать из демо"
+                        : "Показать задачу в демо-доступе"
+                    }
+                  >
+                    {module.demoTaskSlugs.includes(slug) ? "✓ в демо" : "в демо"}
+                  </button>
+                </form>
 
                 <form action={detachTaskAction}>
                   <input type="hidden" name="moduleId" value={module.id} />

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
+import { DemoNotice } from "@/components/DemoNotice";
 import { Markdown } from "@/components/Markdown";
 import { VideoEmbed } from "@/components/VideoEmbed";
 import type { Lesson, Step } from "@/lib/content/types";
@@ -17,6 +18,8 @@ type Props = {
   /** Следующий шаг модуля: урок или первая задача */
   nextStep?: Step;
   position: { index: number; total: number };
+  /** Демо-доступ: страница открыта без входа, прогресс не сохраняется */
+  isDemo?: boolean;
 };
 
 export function LessonView({
@@ -27,20 +30,30 @@ export function LessonView({
   read,
   nextStep,
   position,
+  isDemo = false,
 }: Props) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [failed, setFailed] = useState(false);
 
+  const fallbackHref = isDemo ? "/demo" : `/modules/${moduleSlug}`;
+
   const goNext = () => {
     setFailed(false);
+
+    // В демо сохранять нечего: аккаунта нет, просто ведём дальше
+    if (isDemo) {
+      router.push(nextStep ? nextStep.href : fallbackHref);
+      return;
+    }
+
     startTransition(async () => {
       const saved = await postLessonRead(lessonId);
       if (!saved) {
         setFailed(true);
         return;
       }
-      router.push(nextStep ? nextStep.href : `/modules/${moduleSlug}`);
+      router.push(nextStep ? nextStep.href : fallbackHref);
       router.refresh();
     });
   };
@@ -48,8 +61,8 @@ export function LessonView({
   return (
     <main className="mx-auto max-w-3xl px-6 py-10">
       <div className="mb-6 flex items-center gap-2 text-[13px]">
-        <Link href={`/modules/${moduleSlug}`} className="text-muted transition-colors hover:text-accent">
-          ← {moduleTitle}
+        <Link href={fallbackHref} className="text-muted transition-colors hover:text-accent">
+          ← {isDemo ? "Демо-доступ" : moduleTitle}
         </Link>
         <span className="text-faint">·</span>
         <span className="text-faint">
@@ -63,7 +76,9 @@ export function LessonView({
       </div>
 
       <h1 className="mb-1.5 text-2xl font-semibold tracking-tight text-text">{lesson.title}</h1>
-      <p className="mb-8 text-[14px] text-muted">{lesson.summary}</p>
+      <p className="mb-6 text-[14px] text-muted">{lesson.summary}</p>
+
+      {isDemo && <DemoNotice />}
 
       <div className="space-y-7">
         {lesson.blocks.map((block, index) => {
@@ -111,11 +126,15 @@ export function LessonView({
         >
           {pending
             ? "Сохраняем…"
-            : nextStep
-              ? nextStep.kind === "task"
-                ? "Прочитано, перейти к задачам →"
-                : "Прочитано, следующий урок →"
-              : "Прочитано, к модулю →"}
+            : isDemo
+              ? nextStep
+                ? "Дальше →"
+                : "Вернуться к демо →"
+              : nextStep
+                ? nextStep.kind === "task"
+                  ? "Прочитано, перейти к задачам →"
+                  : "Прочитано, следующий урок →"
+                : "Прочитано, к модулю →"}
         </button>
 
         {nextStep && !pending && <span className="text-[13px] text-faint">Дальше: {nextStep.title}</span>}

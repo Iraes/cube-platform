@@ -14,6 +14,9 @@ function StepRow({ step, index, done }: { step: Step; index: number; done: boole
     <li>
       <Link
         href={step.href}
+        // Каждый prefetch тянет свою страницу с запросами к базе: при десятке
+        // ссылок это заметно дороже, чем секунда ожидания после клика
+        prefetch={false}
         className={`flex items-center gap-3.5 rounded-lg border px-4 py-3 transition-colors ${
           done
             ? "border-ok/35 bg-surface hover:bg-surface-2"

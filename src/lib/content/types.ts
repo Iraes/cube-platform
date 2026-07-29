@@ -19,6 +19,8 @@ export type Lesson = {
   title: string;
   summary: string;
   blocks: LessonBlock[];
+  /** Виден без входа, в демо-доступе */
+  isDemo: boolean;
 };
 
 export type Module = {
@@ -30,6 +32,8 @@ export type Module = {
   lessons: Lesson[];
   /** …потом решают эти задачи (slug из src/lib/tasks) */
   taskSlugs: string[];
+  /** Подмножество taskSlugs, открытое в демо-доступе */
+  demoTaskSlugs: string[];
 };
 
 /** Шаг прохождения модуля: урок или задача */

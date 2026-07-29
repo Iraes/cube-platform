@@ -1,6 +1,6 @@
 import { cache } from "react";
 import { asc, eq } from "drizzle-orm";
-import { getDb } from "@/lib/db";
+import { batch, getDb } from "@/lib/db";
 import { lessons, moduleTasks, modules } from "@/lib/db/schema";
 import { getTask } from "@/lib/tasks";
 import type { Lesson, Module, Step } from "./types";
@@ -10,37 +10,43 @@ export * from "./types";
 /**
  * Модули с уроками и списком задач.
  *
- * Три запроса и сборка в памяти вместо запроса на каждый модуль:
- * материалов немного, а N+1 не нужен даже на маленьких объёмах.
- * `cache` дедуплицирует вызовы в пределах одного запроса.
+ * Три выборки уходят одним обращением к базе: до Neon каждый запрос —
+ * отдельный HTTP-вызов, и три подряд стоят втрое дороже одного.
+ * `cache` дополнительно дедуплицирует вызовы внутри одного запроса страницы.
  */
 export const getModules = cache(async (): Promise<Module[]> => {
   const db = await getDb();
 
-  const [moduleRows, lessonRows, taskRows] = await Promise.all([
+  const [moduleRows, lessonRows, taskRows] = await batch(db, [
     db.select().from(modules).orderBy(asc(modules.position), asc(modules.createdAt)),
     db.select().from(lessons).orderBy(asc(lessons.position), asc(lessons.createdAt)),
     db.select().from(moduleTasks).orderBy(asc(moduleTasks.position)),
   ]);
 
-  return moduleRows.map((row) => ({
-    id: row.id,
-    slug: row.slug,
-    title: row.title,
-    description: row.description,
-    lessons: lessonRows
-      .filter((lesson) => lesson.moduleId === row.id)
-      .map(
-        (lesson): Lesson => ({
-          id: lesson.id,
-          slug: lesson.slug,
-          title: lesson.title,
-          summary: lesson.summary,
-          blocks: lesson.blocks ?? [],
-        }),
-      ),
-    taskSlugs: taskRows.filter((task) => task.moduleId === row.id).map((task) => task.taskSlug),
-  }));
+  return moduleRows.map((row) => {
+    const ownTasks = taskRows.filter((task) => task.moduleId === row.id);
+
+    return {
+      id: row.id,
+      slug: row.slug,
+      title: row.title,
+      description: row.description,
+      lessons: lessonRows
+        .filter((lesson) => lesson.moduleId === row.id)
+        .map(
+          (lesson): Lesson => ({
+            id: lesson.id,
+            slug: lesson.slug,
+            title: lesson.title,
+            summary: lesson.summary,
+            blocks: lesson.blocks ?? [],
+            isDemo: lesson.isDemo,
+          }),
+        ),
+      taskSlugs: ownTasks.map((task) => task.taskSlug),
+      demoTaskSlugs: ownTasks.filter((task) => task.isDemo).map((task) => task.taskSlug),
+    };
+  });
 });
 
 export const getModuleBySlug = cache(async (slug: string): Promise<Module | undefined> => {
@@ -96,4 +102,28 @@ export async function isKnownLessonId(id: string): Promise<boolean> {
   const db = await getDb();
   const rows = await db.select({ id: lessons.id }).from(lessons).where(eq(lessons.id, id)).limit(1);
   return rows.length > 0;
+}
+
+/** Материалы, открытые без входа на платформу */
+export const getDemoContent = cache(async () => {
+  const all = await getModules();
+
+  return all
+    .map((module) => ({
+      module,
+      lessons: module.lessons.filter((lesson) => lesson.isDemo),
+      taskSlugs: module.demoTaskSlugs,
+    }))
+    .filter((entry) => entry.lessons.length > 0 || entry.taskSlugs.length > 0);
+});
+
+export async function isDemoLesson(moduleSlug: string, lessonSlug: string): Promise<boolean> {
+  const module = await getModuleBySlug(moduleSlug);
+  if (!module) return false;
+  return findLesson(module, lessonSlug)?.isDemo ?? false;
+}
+
+export async function isDemoTask(taskSlug: string): Promise<boolean> {
+  const all = await getModules();
+  return all.some((module) => module.demoTaskSlugs.includes(taskSlug));
 }

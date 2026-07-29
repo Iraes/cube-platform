@@ -1,8 +1,8 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { LessonView } from "@/components/LessonView";
 import { findLesson, getModuleBySlug, getNextStep } from "@/lib/content";
-import { getUserProgress } from "@/lib/progress";
-import { requireUser } from "@/lib/session";
+import { EMPTY_PROGRESS, getUserProgress } from "@/lib/progress";
+import { getSessionUser } from "@/lib/session";
 
 export async function generateMetadata({
   params,
@@ -11,7 +11,7 @@ export async function generateMetadata({
 }) {
   const { slug, lessonSlug } = await params;
   const module = await getModuleBySlug(slug);
-  const lesson = module ? findLesson(module, lessonSlug) : undefined;
+  const lesson = module && findLesson(module, lessonSlug);
   return { title: lesson ? `${lesson.title} — Cube` : "Урок не найден — Cube" };
 }
 
@@ -20,15 +20,27 @@ export default async function LessonPage({
 }: {
   params: Promise<{ slug: string; lessonSlug: string }>;
 }) {
-  const user = await requireUser();
   const { slug, lessonSlug } = await params;
-  const module = await getModuleBySlug(slug);
-  const lesson = module ? findLesson(module, lessonSlug) : undefined;
+  const [user, module] = await Promise.all([getSessionUser(), getModuleBySlug(slug)]);
+  const lesson = module && findLesson(module, lessonSlug);
 
   if (!module || !lesson) notFound();
 
-  const index = module.lessons.findIndex((item) => item.id === lesson.id);
-  const progress = await getUserProgress(user.id);
+  // Без входа пускаем только на уроки, отмеченные в админке как демо
+  if (!user && !lesson.isDemo) redirect("/login");
+
+  const progress = user ? await getUserProgress(user.id) : EMPTY_PROGRESS;
+  const index = module.lessons.findIndex((item) => item.slug === lesson.slug);
+
+  // В демо следующий шаг тоже должен быть демо, иначе упрёмся в форму входа
+  const nextStep = getNextStep(module, lesson.id);
+  const nextAllowed =
+    user ||
+    (nextStep?.kind === "lesson"
+      ? module.lessons.some((item) => item.id === nextStep.id && item.isDemo)
+      : nextStep
+        ? module.demoTaskSlugs.includes(nextStep.id)
+        : false);
 
   return (
     <LessonView
@@ -37,8 +49,9 @@ export default async function LessonPage({
       lesson={lesson}
       lessonId={lesson.id}
       read={progress.readLessons.includes(lesson.id)}
-      nextStep={getNextStep(module, lesson.id)}
+      nextStep={nextAllowed ? nextStep : undefined}
       position={{ index: index + 1, total: module.lessons.length }}
+      isDemo={!user}
     />
   );
 }

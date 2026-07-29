@@ -175,6 +175,19 @@ export async function updateLesson(
     .where(eq(lessons.id, id));
 }
 
+export async function setLessonDemo(id: string, isDemo: boolean) {
+  const db = await getDb();
+  await db.update(lessons).set({ isDemo }).where(eq(lessons.id, id));
+}
+
+export async function setTaskDemo(moduleId: string, taskSlug: string, isDemo: boolean) {
+  const db = await getDb();
+  await db
+    .update(moduleTasks)
+    .set({ isDemo })
+    .where(and(eq(moduleTasks.moduleId, moduleId), eq(moduleTasks.taskSlug, taskSlug)));
+}
+
 export async function deleteLesson(id: string) {
   const db = await getDb();
   await db.delete(lessons).where(eq(lessons.id, id));

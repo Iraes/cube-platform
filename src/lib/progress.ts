@@ -1,5 +1,5 @@
 import { and, eq } from "drizzle-orm";
-import { getDb } from "@/lib/db";
+import { batch, getDb } from "@/lib/db";
 import { lessonProgress, submissions } from "@/lib/db/schema";
 
 /**
@@ -18,7 +18,8 @@ export const EMPTY_PROGRESS: UserProgress = { solvedTasks: [], readLessons: [] }
 export async function getUserProgress(userId: string): Promise<UserProgress> {
   const db = await getDb();
 
-  const [solvedRows, lessonRows] = await Promise.all([
+  // Обе выборки уходят одним обращением к базе: см. комментарий к batch
+  const [solvedRows, lessonRows] = await batch(db, [
     db
       .selectDistinct({ taskSlug: submissions.taskSlug })
       .from(submissions)
