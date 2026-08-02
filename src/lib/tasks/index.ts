@@ -1,11 +1,16 @@
 import type { Task } from '@/lib/runner/types';
+import { capitalize } from './capitalize';
+import { compareWithPrecision } from './compareWithPrecision';
 import { countChars } from './count-chars';
 import { dataTypesQuiz } from './data-types-quiz';
+import { defaultTo } from './defaultto';
 import { errors } from './errors';
 import { filterEven } from './filter-even';
 import { fizzBuzz } from './fizz-buzz';
 import { reverseString } from './reverse-string';
+import { stopGninnipsMySdrow } from './stop-gninnipS-My-sdroW';
 import { sumTwoNumbers } from './sum-two-numbers';
+import { wrapInParagraph } from './wrapInParagraph';
 
 /**
  * Каталог задач. Хранится файлами в репозитории, а не в БД:
@@ -18,6 +23,11 @@ export const tasks: Task[] = [
   filterEven,
   countChars,
   fizzBuzz,
+  capitalize,
+  defaultTo,
+  compareWithPrecision,
+  stopGninnipsMySdrow,
+  wrapInParagraph,
   errors,
   dataTypesQuiz,
 ];
