@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { LessonEditor } from "@/components/admin/LessonEditor";
 import { deleteLessonAction } from "@/lib/actions/admin";
 import { getModuleById } from "@/lib/content";
+import { tasks } from "@/lib/tasks";
 
 export default async function AdminLessonEditor({
   params,
@@ -34,7 +35,11 @@ export default async function AdminLessonEditor({
 
       <h1 className="mb-6 text-2xl font-semibold tracking-tight text-text">{lesson.title}</h1>
 
-      <LessonEditor lesson={lesson} moduleId={module.id} />
+      <LessonEditor
+        lesson={lesson}
+        moduleId={module.id}
+        tasks={tasks.map((task) => ({ slug: task.slug, title: task.title }))}
+      />
 
       <section className="mt-10 rounded-lg border border-err/35 bg-err-soft p-4">
         <h2 className="mb-1 text-[13.5px] font-semibold text-err">Удалить урок</h2>

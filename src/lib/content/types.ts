@@ -9,7 +9,9 @@ export type LessonBlock =
   /** Видео проигрывается прямо на странице: YouTube, Vimeo, RuTube, VK или файл .mp4 */
   | { type: "video"; url: string; title?: string; note?: string }
   /** Ссылка на внешнюю статью — открывается в новой вкладке */
-  | { type: "article"; url: string; title: string; source?: string; note?: string };
+  | { type: "article"; url: string; title: string; source?: string; note?: string }
+  /** Кнопка-переход на задачу платформы: из теории сразу к практике */
+  | { type: "task"; slug: string; note?: string };
 
 export type LessonBlockType = LessonBlock["type"];
 

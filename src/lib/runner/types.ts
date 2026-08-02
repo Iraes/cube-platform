@@ -30,10 +30,33 @@ export type RunResult = {
   error?: RuntimeError;
 };
 
+/** Имена встроенных типов ошибок, которые задача может требовать «породить» */
+export type ErrorKind =
+  | 'ReferenceError'
+  | 'TypeError'
+  | 'RangeError'
+  | 'SyntaxError'
+  | 'EvalError'
+  | 'URIError'
+  | 'Error';
+
 export type AlgoTestCase = {
   name: string;
   input: unknown[];
-  expected: unknown;
+  /** Ожидаемый результат. Не нужен, если проверяем выброшенную ошибку */
+  expected?: unknown;
+  /**
+   * Какую функцию вызывать. По умолчанию `solution` — в задачах,
+   * где ученик пишет несколько функций, здесь их имена.
+   */
+  fn?: string;
+  /**
+   * Проверка «вызов должен выбросить ошибку такого типа».
+   * Нужна для задач, где смысл именно в ошибке, а не в возвращённом значении.
+   */
+  throws?: ErrorKind;
+  /** Дополнительно: часть текста ошибки. Осторожно — формулировки зависят от браузера */
+  messageIncludes?: string;
 };
 
 export type AlgorithmTask = {

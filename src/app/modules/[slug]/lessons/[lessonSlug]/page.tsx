@@ -3,6 +3,7 @@ import { LessonView } from "@/components/LessonView";
 import { findLesson, getModuleBySlug, getNextStep } from "@/lib/content";
 import { EMPTY_PROGRESS, getUserProgress } from "@/lib/progress";
 import { getSessionUser } from "@/lib/session";
+import { getTask } from "@/lib/tasks";
 
 export async function generateMetadata({
   params,
@@ -42,6 +43,14 @@ export default async function LessonPage({
         ? module.demoTaskSlugs.includes(nextStep.id)
         : false);
 
+  // Названия задач для блоков-переходов внутри урока
+  const taskTitles: Record<string, string> = {};
+  for (const block of lesson.blocks) {
+    if (block.type !== "task") continue;
+    const task = getTask(block.slug);
+    if (task) taskTitles[block.slug] = task.title;
+  }
+
   return (
     <LessonView
       moduleSlug={module.slug}
@@ -52,6 +61,7 @@ export default async function LessonPage({
       nextStep={nextAllowed ? nextStep : undefined}
       position={{ index: index + 1, total: module.lessons.length }}
       isDemo={!user}
+      taskTitles={taskTitles}
     />
   );
 }

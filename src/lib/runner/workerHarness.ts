@@ -144,6 +144,61 @@ function __cubeErrorText(e) {
   return 'Выброшено значение: ' + __cubeFormat(e);
 }
 
+/**
+ * Достаёт функцию ученика по имени.
+ *
+ * Именно прямой eval, а не globalThis[name]: объявления через let и const
+ * на верхнем уровне скрипта в globalThis не попадают, а прямой eval видит
+ * лексическое окружение — то есть и function-объявления, и const.
+ */
+function __cubeResolve(name) {
+  if (!/^[A-Za-z_$][A-Za-z0-9_$]*$/.test(name)) return undefined;
+  try {
+    return eval(name);
+  } catch (e) {
+    return undefined;
+  }
+}
+
+/** Проверка «вызов должен выбросить ошибку такого типа» */
+function __cubeCheckThrown(testCase, thrown, didThrow) {
+  var expected = testCase.throws;
+
+  if (!didThrow) {
+    return {
+      passed: false,
+      error:
+        'Ошибки не было: вызов вернул значение вместо того, чтобы породить ' + expected + '.'
+    };
+  }
+
+  var ctor = typeof globalThis[expected] === 'function' ? globalThis[expected] : null;
+  var matches = ctor ? thrown instanceof ctor : false;
+
+  // Запасной путь: ошибка из другого realm не пройдёт instanceof
+  if (!matches && thrown && thrown.name === expected) matches = true;
+
+  if (!matches) {
+    return {
+      passed: false,
+      error: 'Ожидалась ошибка ' + expected + ', а получилась ' + __cubeErrorText(thrown)
+    };
+  }
+
+  if (testCase.messageIncludes) {
+    var text = thrown && thrown.message ? String(thrown.message) : '';
+    if (text.indexOf(testCase.messageIncludes) === -1) {
+      return {
+        passed: false,
+        error:
+          'Тип ошибки верный, но в тексте нет «' + testCase.messageIncludes + '»: ' + text
+      };
+    }
+  }
+
+  return { passed: true, error: undefined };
+}
+
 async function __cubeRunTests(tests) {
   var results = [];
   var firstError = null;
@@ -151,31 +206,68 @@ async function __cubeRunTests(tests) {
   for (var i = 0; i < tests.length; i++) {
     var testCase = tests[i];
     var input = Array.isArray(testCase.input) ? testCase.input : [];
-    try {
-      // solution вызывается ровно один раз, результат переиспользуется
-      var actual = solution.apply(null, input);
-      if (actual && typeof actual.then === 'function') actual = await actual;
+    var fnName = testCase.fn || 'solution';
+    var fn = __cubeResolve(fnName);
+
+    if (typeof fn !== 'function') {
       results.push({
         name: testCase.name,
-        passed: __cubeDeepEqual(actual, testCase.expected),
-        expected: __cubeCloneable(testCase.expected),
-        actual: __cubeCloneable(actual)
+        passed: false,
+        error:
+          typeof fn === 'undefined'
+            ? 'В коде не найдена функция ' + fnName
+            : fnName + ' объявлена, но это не функция, а ' + typeof fn
       });
+      continue;
+    }
+
+    var thrown = null;
+    var didThrow = false;
+    var actual;
+
+    try {
+      // Функция вызывается ровно один раз, результат переиспользуется
+      actual = fn.apply(null, input);
+      if (actual && typeof actual.then === 'function') actual = await actual;
     } catch (e) {
+      thrown = e;
+      didThrow = true;
+    }
+
+    // Задачи «породи ошибку»: проверяем тип выброшенного, а не результат
+    if (testCase.throws) {
+      var verdict = __cubeCheckThrown(testCase, thrown, didThrow);
+      results.push({
+        name: testCase.name,
+        passed: verdict.passed,
+        error: verdict.error
+      });
+      continue;
+    }
+
+    if (didThrow) {
       // Падение одного теста не останавливает остальные
       if (!firstError) {
         firstError = {
-          message: __cubeErrorText(e),
-          stack: e && e.stack ? String(e.stack) : undefined
+          message: __cubeErrorText(thrown),
+          stack: thrown && thrown.stack ? String(thrown.stack) : undefined
         };
       }
       results.push({
         name: testCase.name,
         passed: false,
         expected: __cubeCloneable(testCase.expected),
-        error: __cubeErrorText(e)
+        error: __cubeErrorText(thrown)
       });
+      continue;
     }
+
+    results.push({
+      name: testCase.name,
+      passed: __cubeDeepEqual(actual, testCase.expected),
+      expected: __cubeCloneable(testCase.expected),
+      actual: __cubeCloneable(actual)
+    });
   }
 
   return { results: results, error: firstError };
@@ -192,7 +284,13 @@ self.onmessage = async function (event) {
     return;
   }
 
-  if (typeof solution === 'undefined') {
+  // Задача может требовать несколько функций со своими именами — тогда
+  // отсутствие solution не ошибка, и о пропавшей функции скажет её тест.
+  var needsSolution = tests.some(function (testCase) {
+    return !testCase.fn;
+  });
+
+  if (needsSolution && typeof solution === 'undefined') {
     self.postMessage({
       type: 'done',
       results: [],
@@ -204,7 +302,7 @@ self.onmessage = async function (event) {
     return;
   }
 
-  if (typeof solution !== 'function') {
+  if (needsSolution && typeof solution !== 'function') {
     self.postMessage({
       type: 'done',
       results: [],

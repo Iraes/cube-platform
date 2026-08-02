@@ -22,6 +22,13 @@
       "when": 1785221282018,
       "tag": "0002_wonderful_skin",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1785662001433,
+      "tag": "0003_large_doctor_octopus",
+      "breakpoints": true
     }
   ]
 }

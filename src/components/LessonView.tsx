@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
+import { BugReportButton } from "@/components/BugReportButton";
 import { DemoNotice } from "@/components/DemoNotice";
 import { Markdown } from "@/components/Markdown";
 import { VideoEmbed } from "@/components/VideoEmbed";
@@ -20,6 +21,8 @@ type Props = {
   position: { index: number; total: number };
   /** Демо-доступ: страница открыта без входа, прогресс не сохраняется */
   isDemo?: boolean;
+  /** Названия задач для блоков-переходов: slug → заголовок */
+  taskTitles?: Record<string, string>;
 };
 
 export function LessonView({
@@ -31,6 +34,7 @@ export function LessonView({
   nextStep,
   position,
   isDemo = false,
+  taskTitles = {},
 }: Props) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -69,10 +73,17 @@ export function LessonView({
           урок {position.index} из {position.total}
         </span>
         {read && (
-          <span className="ml-auto rounded-full bg-ok-soft px-2.5 py-0.5 text-[11.5px] font-medium text-ok">
+          <span className="rounded-full bg-ok-soft px-2.5 py-0.5 text-[11.5px] font-medium text-ok">
             ✓ прочитано
           </span>
         )}
+
+        <BugReportButton
+          contextKind="lesson"
+          contextId={lessonId}
+          contextTitle={lesson.title}
+          className="ml-auto"
+        />
       </div>
 
       <h1 className="mb-1.5 text-2xl font-semibold tracking-tight text-text">{lesson.title}</h1>
@@ -92,6 +103,31 @@ export function LessonView({
 
           if (block.type === "video") {
             return <VideoEmbed key={index} url={block.url} title={block.title} note={block.note} />;
+          }
+
+          // Переход из теории сразу к практике
+          if (block.type === "task") {
+            const title = taskTitles[block.slug];
+            if (!title) return null;
+
+            return (
+              <div
+                key={index}
+                className="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-lg border border-accent/40 bg-accent-soft p-4"
+              >
+                <div className="min-w-0 flex-1">
+                  <p className="text-[14.5px] font-medium text-text">{title}</p>
+                  {block.note && <p className="mt-0.5 text-[13px] text-muted">{block.note}</p>}
+                </div>
+                <Link
+                  href={`/tasks/${block.slug}`}
+                  prefetch={false}
+                  className="h-9 shrink-0 rounded-md bg-accent px-4 text-[13.5px] font-semibold leading-9 text-accent-fg transition-colors hover:bg-accent-strong"
+                >
+                  Решать задачу →
+                </Link>
+              </div>
+            );
           }
 
           return (

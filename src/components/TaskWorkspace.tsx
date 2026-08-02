@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { BugReportButton } from "@/components/BugReportButton";
 import { CodeEditor } from "@/components/CodeEditor";
 import { ConsolePanel } from "@/components/ConsolePanel";
 import { TaskDescription } from "@/components/TaskDescription";
@@ -128,6 +129,7 @@ export function TaskWorkspace({
         moduleTitle={moduleTitle}
         solved={solved || justSolved}
         isDemo={isDemo}
+        nextStep={nextStep}
       />
 
       <section className="flex h-[460px] min-h-0 flex-col bg-surface lg:h-full">
@@ -163,6 +165,8 @@ export function TaskWorkspace({
           <span className="ml-auto font-mono text-[11px] text-faint">
             Ctrl+Enter · Ctrl+Shift+Enter
           </span>
+
+          <BugReportButton contextKind="task" contextId={task.slug} contextTitle={task.title} />
         </div>
 
         {saveFailed && (

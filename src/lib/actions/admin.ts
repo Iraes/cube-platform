@@ -2,6 +2,9 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { eq } from "drizzle-orm";
+import { getDb } from "@/lib/db";
+import { bugReports } from "@/lib/db/schema";
 import {
   attachTask,
   createLesson,
@@ -152,6 +155,12 @@ function parseBlocks(raw: string): LessonBlock[] {
         source: typeof block.source === "string" ? block.source : undefined,
         note: typeof block.note === "string" ? block.note : undefined,
       });
+    } else if (block.type === "task" && typeof block.slug === "string" && getTask(block.slug)) {
+      blocks.push({
+        type: "task",
+        slug: block.slug,
+        note: typeof block.note === "string" ? block.note : undefined,
+      });
     }
   }
 
@@ -243,6 +252,30 @@ export async function moveTaskAction(formData: FormData): Promise<void> {
   const direction = text(formData, "direction") === "up" ? "up" : "down";
   if (moduleId && taskSlug) await moveTask(moduleId, taskSlug, direction);
   refreshContent();
+}
+
+// ---------- Сообщения о багах ----------
+
+export async function resolveBugAction(formData: FormData): Promise<void> {
+  await requireAdmin();
+
+  const id = text(formData, "id");
+  if (id) {
+    const db = await getDb();
+    await db.update(bugReports).set({ resolved: true }).where(eq(bugReports.id, id));
+  }
+  revalidatePath("/admin/bugs", "page");
+}
+
+export async function deleteBugAction(formData: FormData): Promise<void> {
+  await requireAdmin();
+
+  const id = text(formData, "id");
+  if (id) {
+    const db = await getDb();
+    await db.delete(bugReports).where(eq(bugReports.id, id));
+  }
+  revalidatePath("/admin/bugs", "page");
 }
 
 // ---------- Пользователи ----------

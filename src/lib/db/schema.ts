@@ -118,6 +118,30 @@ export const lessonProgress = pgTable(
   (table) => [primaryKey({ columns: [table.userId, table.lessonId] })],
 );
 
+/**
+ * Сообщения о багах от учеников. userId необязателен: сообщить о проблеме
+ * можно и из демо-доступа, где аккаунта нет.
+ */
+export const bugReports = pgTable(
+  "bug_reports",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id").references(() => users.id, { onDelete: "set null" }),
+    /** Откуда пришло сообщение: страница урока, задачи или что-то ещё */
+    contextKind: text("context_kind", { enum: ["lesson", "task", "other"] })
+      .notNull()
+      .default("other"),
+    contextId: text("context_id"),
+    /** Название на момент отправки: урок могут переименовать или удалить */
+    contextTitle: text("context_title").notNull().default(""),
+    message: text("message").notNull(),
+    resolved: boolean("resolved").notNull().default(false),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [index("bug_reports_created_idx").on(table.createdAt)],
+);
+
 export type UserRow = typeof users.$inferSelect;
+export type BugReportRow = typeof bugReports.$inferSelect;
 export type ModuleRow = typeof modules.$inferSelect;
 export type LessonRow = typeof lessons.$inferSelect;

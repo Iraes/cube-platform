@@ -18,6 +18,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         <Link href="/admin/users" className="rounded-md px-3 py-1.5 text-muted transition-colors hover:bg-hover hover:text-text">
           Пользователи
         </Link>
+        <Link href="/admin/bugs" className="rounded-md px-3 py-1.5 text-muted transition-colors hover:bg-hover hover:text-text">
+          Баги
+        </Link>
         <Link href="/" className="ml-auto rounded-md px-3 py-1.5 text-faint transition-colors hover:text-accent">
           ← К платформе
         </Link>

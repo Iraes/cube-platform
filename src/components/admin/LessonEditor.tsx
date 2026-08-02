@@ -15,15 +15,27 @@ const BLOCK_LABELS: Record<LessonBlockType, string> = {
   text: "Текст",
   video: "Видео",
   article: "Статья",
+  task: "Задача",
 };
 
-function emptyBlock(type: LessonBlockType): LessonBlock {
+type TaskOption = { slug: string; title: string };
+
+function emptyBlock(type: LessonBlockType, tasks: TaskOption[]): LessonBlock {
   if (type === "text") return { type: "text", markdown: "" };
   if (type === "video") return { type: "video", url: "", title: "" };
+  if (type === "task") return { type: "task", slug: tasks[0]?.slug ?? "" };
   return { type: "article", url: "", title: "", source: "" };
 }
 
-export function LessonEditor({ lesson, moduleId }: { lesson: Lesson; moduleId: string }) {
+export function LessonEditor({
+  lesson,
+  moduleId,
+  tasks,
+}: {
+  lesson: Lesson;
+  moduleId: string;
+  tasks: TaskOption[];
+}) {
   const [state, formAction, pending] = useActionState(saveLessonAction, INITIAL);
   const [blocks, setBlocks] = useState<LessonBlock[]>(lesson.blocks);
 
@@ -44,7 +56,7 @@ export function LessonEditor({ lesson, moduleId }: { lesson: Lesson; moduleId: s
   };
 
   const remove = (index: number) => setBlocks((prev) => prev.filter((_, i) => i !== index));
-  const add = (type: LessonBlockType) => setBlocks((prev) => [...prev, emptyBlock(type)]);
+  const add = (type: LessonBlockType) => setBlocks((prev) => [...prev, emptyBlock(type, tasks)]);
 
   return (
     <form action={formAction}>
@@ -151,6 +163,29 @@ export function LessonEditor({ lesson, moduleId }: { lesson: Lesson; moduleId: s
                   value={block.note ?? ""}
                   onChange={(event) => update(index, { note: event.target.value })}
                   placeholder="Пояснение под плеером (необязательно)"
+                  className={inputClass}
+                />
+              </div>
+            )}
+
+            {block.type === "task" && (
+              <div className="space-y-2">
+                <select
+                  value={block.slug}
+                  onChange={(event) => update(index, { slug: event.target.value })}
+                  className={inputClass}
+                >
+                  {tasks.length === 0 && <option value="">Задач пока нет</option>}
+                  {tasks.map((task) => (
+                    <option key={task.slug} value={task.slug}>
+                      {task.title}
+                    </option>
+                  ))}
+                </select>
+                <input
+                  value={block.note ?? ""}
+                  onChange={(event) => update(index, { note: event.target.value })}
+                  placeholder="Подпись у кнопки, например «Закрепим на практике» (необязательно)"
                   className={inputClass}
                 />
               </div>
