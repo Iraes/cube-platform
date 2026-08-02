@@ -2,14 +2,15 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { BugReportButton } from "@/components/BugReportButton";
 import { CodeEditor } from "@/components/CodeEditor";
 import { ConsolePanel } from "@/components/ConsolePanel";
+import { DomPreview } from "@/components/DomPreview";
 import { TaskDescription } from "@/components/TaskDescription";
 import { runCode } from "@/lib/runner";
-import type { CodeTask, RunMode, RunResult } from "@/lib/runner/types";
-import type { Step } from "@/lib/content/types";
+import type { CodeTask, ConsoleLine, RunMode, RunResult } from "@/lib/runner/types";
+import type { BackLink, Step } from "@/lib/content/types";
 import { postSubmission } from "@/lib/progressClient";
 
 type Props = {
@@ -17,6 +18,8 @@ type Props = {
   solved: boolean;
   moduleSlug?: string;
   moduleTitle?: string;
+  /** Куда возвращаться: по умолчанию модуль, из урока — в этот урок */
+  backTo?: BackLink;
   nextStep?: Step;
   /** Демо-доступ: код запускается и проверяется, но результат не сохраняется */
   isDemo?: boolean;
@@ -27,6 +30,7 @@ export function TaskWorkspace({
   solved,
   moduleSlug,
   moduleTitle,
+  backTo,
   nextStep,
   isDemo = false,
 }: Props) {
@@ -37,11 +41,21 @@ export function TaskWorkspace({
   const [running, setRunning] = useState(false);
   const [saveFailed, setSaveFailed] = useState(false);
 
+  // DOM-задачи: что сейчас крутится в превью и что оно успело вывести в консоль
+  const [run, setRun] = useState<{ id: number; code: string } | null>(null);
+  const [previewLogs, setPreviewLogs] = useState<ConsoleLine[]>([]);
+  const isDom = task.kind === "dom";
+
   // Актуальный код для обработчиков, которые создаются один раз.
   // Обновляется синхронно с вводом: между правкой и запуском может не быть
   // ни одного рендера (Ctrl+Enter сразу после набора кода).
   const codeRef = useRef(code);
   const runningRef = useRef(false);
+
+  // При отправке превью перезапускается вместе с фреймом проверок, и обе копии
+  // кода пишут одно и то же. Пока проверка идёт, вывод превью не берём —
+  // иначе ученик видит каждую строку дважды.
+  const mutePreviewRef = useRef(false);
 
   const handleCodeChange = useCallback((next: string) => {
     codeRef.current = next;
@@ -52,13 +66,20 @@ export function TaskWorkspace({
     async (nextMode: RunMode) => {
       if (runningRef.current) return;
       runningRef.current = true;
+      mutePreviewRef.current = nextMode === "submit";
       setRunning(true);
       setMode(nextMode);
       setResult(null);
       setSaveFailed(false);
+      setPreviewLogs([]);
 
       try {
         const submitted = codeRef.current;
+
+        // Превью перезапускается вместе с кодом: ученик должен щупать то же,
+        // что сейчас проверяется, а не результат прошлой попытки
+        if (isDom) setRun({ id: Date.now(), code: submitted });
+
         const runResult = await runCode(submitted, task, { mode: nextMode });
         setResult(runResult);
 
@@ -87,10 +108,11 @@ export function TaskWorkspace({
         if (passedAll && !solved) router.refresh();
       } finally {
         runningRef.current = false;
+        mutePreviewRef.current = false;
         setRunning(false);
       }
     },
-    [task, solved, router, isDemo],
+    [task, solved, router, isDemo, isDom],
   );
 
   const handleReset = useCallback(() => {
@@ -98,7 +120,22 @@ export function TaskWorkspace({
     setCode(task.starterCode);
     setResult(null);
     setMode(null);
+    setRun(null);
+    setPreviewLogs([]);
   }, [task]);
+
+  const addPreviewLog = useCallback((line: ConsoleLine) => {
+    if (mutePreviewRef.current) return;
+    setPreviewLogs((prev) => (prev.length > 200 ? prev : [...prev, line]));
+  }, []);
+
+  // Вывод из превью подмешивается к результату запуска: для ученика это
+  // одна консоль, независимо от того, какой фрейм написал строку
+  const shownResult = useMemo<RunResult | null>(() => {
+    if (previewLogs.length === 0) return result;
+    if (!result) return { logs: previewLogs, results: [] };
+    return { ...result, logs: [...result.logs, ...previewLogs] };
+  }, [result, previewLogs]);
 
   // Ctrl+Enter — запустить, Ctrl+Shift+Enter — отправить на проверку
   useEffect(() => {
@@ -129,6 +166,7 @@ export function TaskWorkspace({
         moduleTitle={moduleTitle}
         solved={solved || justSolved}
         isDemo={isDemo}
+        backTo={backTo}
         nextStep={nextStep}
       />
 
@@ -188,12 +226,16 @@ export function TaskWorkspace({
                 Дальше: {nextStep.title} →
               </Link>
             ) : (
-              (isDemo || moduleSlug) && (
+              (backTo || isDemo || moduleSlug) && (
                 <Link
-                  href={isDemo ? "/demo" : `/modules/${moduleSlug}`}
+                  href={backTo?.href ?? (isDemo ? "/demo" : `/modules/${moduleSlug}`)}
                   className="text-[12.5px] text-ok underline underline-offset-2"
                 >
-                  {isDemo ? "Вернуться к демо" : "Вернуться к модулю"}
+                  {backTo
+                    ? `Вернуться к уроку «${backTo.label}»`
+                    : isDemo
+                      ? "Вернуться к демо"
+                      : "Вернуться к модулю"}
                 </Link>
               )
             )}
@@ -205,8 +247,15 @@ export function TaskWorkspace({
         </div>
       </section>
 
-      <div className="h-[430px] lg:h-full">
-        <ConsolePanel result={result} running={running} mode={mode} isDemo={isDemo} />
+      <div className={isDom ? "h-[720px] lg:h-full" : "h-[430px] lg:h-full"}>
+        {isDom ? (
+          <div className="grid h-full min-h-0 grid-rows-2 gap-px bg-border">
+            <DomPreview task={task} run={run} onConsole={addPreviewLog} />
+            <ConsolePanel result={shownResult} running={running} mode={mode} isDemo={isDemo} />
+          </div>
+        ) : (
+          <ConsolePanel result={shownResult} running={running} mode={mode} isDemo={isDemo} />
+        )}
       </div>
     </main>
   );

@@ -43,12 +43,24 @@ export type Module = {
   taskSlugs: string[];
   /** Подмножество taskSlugs, открытое в демо-доступе */
   demoTaskSlugs: string[];
+  /**
+   * Витрина: модуля нет в списке на платформе, зато всё его содержимое
+   * открыто в демо. Уроки и задачи такого модуля считаются демонстрационными
+   * независимо от их собственных отметок.
+   */
+  isDemoOnly: boolean;
 };
 
 /** Шаг прохождения модуля: урок или задача */
 export type Step =
   | { kind: "lesson"; id: string; title: string; href: string }
   | { kind: "task"; id: string; title: string; href: string };
+
+/**
+ * Куда ведёт ссылка «назад» на странице задачи. По умолчанию это модуль,
+ * но ученика, пришедшего из урока, возвращаем в этот урок.
+ */
+export type BackLink = { href: string; label: string };
 
 /** Форма стартовых данных: то же, но без идентификаторов из БД */
 export type SeedModule = {

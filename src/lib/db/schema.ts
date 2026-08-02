@@ -57,6 +57,12 @@ export const modules = pgTable("modules", {
   title: text("title").notNull(),
   description: text("description").notNull().default(""),
   position: integer("position").notNull().default(0),
+  /**
+   * Витринный модуль: не показывается в списке модулей на платформе,
+   * а всё его содержимое открыто в демо-доступе. Отметки «в демо»
+   * у отдельных уроков и задач такого модуля не нужны.
+   */
+  isDemoOnly: boolean("is_demo_only").notNull().default(false),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 

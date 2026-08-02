@@ -7,14 +7,17 @@ export default async function Home() {
   const user = await requireUser();
   const [modules, progress] = await Promise.all([getModules(), getUserProgress(user.id)]);
 
-  const cards: ModuleCard[] = modules.map((module) => ({
-    slug: module.slug,
-    title: module.title,
-    description: module.description,
-    lessonCount: module.lessons.length,
-    taskCount: module.taskSlugs.length,
-    steps: getSteps(module),
-  }));
+  // Витринные модули на платформу не выводим — они живут только в демо
+  const cards: ModuleCard[] = modules
+    .filter((module) => !module.isDemoOnly)
+    .map((module) => ({
+      slug: module.slug,
+      title: module.title,
+      description: module.description,
+      lessonCount: module.lessons.length,
+      taskCount: module.taskSlugs.length,
+      steps: getSteps(module),
+    }));
 
   return (
     <main className="mx-auto max-w-3xl px-6 py-12">

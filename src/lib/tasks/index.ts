@@ -4,6 +4,8 @@ import { compareWithPrecision } from './compareWithPrecision';
 import { countChars } from './count-chars';
 import { dataTypesQuiz } from './data-types-quiz';
 import { defaultTo } from './defaultto';
+import { domFilterList } from './dom-filter-list';
+import { domToggleBox } from './dom-toggle-box';
 import { errors } from './errors';
 import { filterEven } from './filter-even';
 import { fizzBuzz } from './fizz-buzz';
@@ -28,6 +30,8 @@ export const tasks: Task[] = [
   compareWithPrecision,
   stopGninnipsMySdrow,
   wrapInParagraph,
+  domToggleBox,
+  domFilterList,
   errors,
   dataTypesQuiz,
 ];

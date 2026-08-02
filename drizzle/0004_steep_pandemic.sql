@@ -1,0 +1,1 @@
+ALTER TABLE "modules" ADD COLUMN "is_demo_only" boolean DEFAULT false NOT NULL;

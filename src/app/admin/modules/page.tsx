@@ -52,8 +52,15 @@ export default async function AdminModules() {
               </div>
 
               <Link href={`/admin/modules/${module.id}`} className="min-w-0 flex-1">
-                <span className="block truncate text-[14.5px] font-medium text-text">
-                  {module.title}
+                <span className="flex items-center gap-2">
+                  <span className="truncate text-[14.5px] font-medium text-text">
+                    {module.title}
+                  </span>
+                  {module.isDemoOnly && (
+                    <span className="shrink-0 rounded-full bg-ok-soft px-2 py-0.5 text-[11px] font-medium text-ok">
+                      только в демо
+                    </span>
+                  )}
                 </span>
                 <span className="mt-0.5 block text-[12px] text-faint">
                   {withPlural(module.lessons.length, ["урок", "урока", "уроков"])} ·{" "}

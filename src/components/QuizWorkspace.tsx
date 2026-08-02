@@ -6,7 +6,7 @@ import { useCallback, useMemo, useState } from "react";
 import { BugReportButton } from "@/components/BugReportButton";
 import { DemoNotice } from "@/components/DemoNotice";
 import { Markdown } from "@/components/Markdown";
-import type { Step } from "@/lib/content/types";
+import type { BackLink, Step } from "@/lib/content/types";
 import type { PublicQuestion, QuizVerdict } from "@/lib/quiz";
 
 type Props = {
@@ -17,6 +17,8 @@ type Props = {
   solved: boolean;
   moduleSlug?: string;
   moduleTitle?: string;
+  /** Куда возвращаться: по умолчанию модуль, из урока — в этот урок */
+  backTo?: BackLink;
   nextStep?: Step;
   isDemo?: boolean;
 };
@@ -29,6 +31,7 @@ export function QuizWorkspace({
   solved,
   moduleSlug,
   moduleTitle,
+  backTo,
   nextStep,
   isDemo = false,
 }: Props) {
@@ -38,8 +41,8 @@ export function QuizWorkspace({
   const [sending, setSending] = useState(false);
   const [failed, setFailed] = useState<"none" | "network" | "session">("none");
 
-  const backHref = isDemo ? "/demo" : moduleSlug ? `/modules/${moduleSlug}` : "/";
-  const backLabel = isDemo ? "Демо-доступ" : (moduleTitle ?? "Все модули");
+  const backHref = backTo?.href ?? (isDemo ? "/demo" : moduleSlug ? `/modules/${moduleSlug}` : "/");
+  const backLabel = backTo?.label ?? (isDemo ? "Демо-доступ" : (moduleTitle ?? "Все модули"));
 
   const byId = useMemo(
     () => new Map(verdict?.questions.map((question) => [question.id, question])),

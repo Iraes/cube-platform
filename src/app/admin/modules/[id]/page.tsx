@@ -9,6 +9,7 @@ import {
   moveLessonAction,
   moveTaskAction,
   setLessonDemoAction,
+  setModuleDemoOnlyAction,
   setTaskDemoAction,
 } from "@/lib/actions/admin";
 import { getModuleById } from "@/lib/content";
@@ -47,6 +48,30 @@ export default async function AdminModuleEditor({ params }: { params: Promise<{ 
       <h1 className="mb-6 text-2xl font-semibold tracking-tight text-text">{module.title}</h1>
 
       <ModuleSettingsForm module={module} />
+
+      {/* ---------- Витрина ---------- */}
+      <section
+        className={`mt-6 rounded-lg border p-4 ${
+          module.isDemoOnly ? "border-ok/40 bg-ok-soft" : "border-border bg-surface"
+        }`}
+      >
+        <h2 className="mb-1 text-[13.5px] font-semibold text-text">Только в демо-доступе</h2>
+        <p className="mb-3 max-w-2xl text-[12.5px] leading-relaxed text-muted">
+          {module.isDemoOnly
+            ? "Модуля нет в списке на платформе — ни у учеников, ни у вас. Всё его содержимое открыто без входа, отметки «в демо» у отдельных уроков и задач сейчас не действуют."
+            : "Убрать модуль из списка на платформе и целиком открыть его в демо-доступе. Пригодится для витринных материалов, которые не входят в программу."}
+        </p>
+        <form action={setModuleDemoOnlyAction}>
+          <input type="hidden" name="id" value={module.id} />
+          <input type="hidden" name="isDemoOnly" value={module.isDemoOnly ? "0" : "1"} />
+          <button
+            type="submit"
+            className="h-8 rounded-md border border-border-strong px-3 text-[13px] font-medium text-text transition-colors hover:bg-hover"
+          >
+            {module.isDemoOnly ? "Вернуть на платформу" : "Сделать витриной"}
+          </button>
+        </form>
+      </section>
 
       {/* ---------- Уроки ---------- */}
       <section className="mt-8">

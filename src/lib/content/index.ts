@@ -26,11 +26,16 @@ export const getModules = cache(async (): Promise<Module[]> => {
   return moduleRows.map((row) => {
     const ownTasks = taskRows.filter((task) => task.moduleId === row.id);
 
+    // У витринного модуля отметки «в демо» проставлять не нужно:
+    // открыто всё содержимое, иначе модуль было бы не посмотреть вовсе
+    const demoOnly = row.isDemoOnly;
+
     return {
       id: row.id,
       slug: row.slug,
       title: row.title,
       description: row.description,
+      isDemoOnly: demoOnly,
       lessons: lessonRows
         .filter((lesson) => lesson.moduleId === row.id)
         .map(
@@ -40,11 +45,13 @@ export const getModules = cache(async (): Promise<Module[]> => {
             title: lesson.title,
             summary: lesson.summary,
             blocks: lesson.blocks ?? [],
-            isDemo: lesson.isDemo,
+            isDemo: demoOnly || lesson.isDemo,
           }),
         ),
       taskSlugs: ownTasks.map((task) => task.taskSlug),
-      demoTaskSlugs: ownTasks.filter((task) => task.isDemo).map((task) => task.taskSlug),
+      demoTaskSlugs: ownTasks
+        .filter((task) => demoOnly || task.isDemo)
+        .map((task) => task.taskSlug),
     };
   });
 });
@@ -89,6 +96,26 @@ export function getNextStep(module: Module, currentId: string): Step | undefined
   const steps = getSteps(module);
   const index = steps.findIndex((step) => step.id === currentId);
   return index === -1 ? undefined : steps[index + 1];
+}
+
+/**
+ * Следующий шаг для ученика, который пришёл в задачу из урока.
+ *
+ * Задачи в маршруте модуля лежат хвостом после всех уроков, поэтому обычный
+ * `getNextStep` увёл бы его к следующей задаче, минуя оставшуюся теорию.
+ * Считаем от урока-источника — так после задачи ученик возвращается к урокам.
+ */
+export function getNextStepFromLesson(
+  module: Module,
+  lesson: Lesson,
+  taskSlug: string,
+): Step | undefined {
+  const next = getNextStep(module, lesson.id);
+
+  // Урок был последним, и следом идёт та самая задача — ведём на шаг за ней
+  if (next?.kind === "task" && next.id === taskSlug) return getNextStep(module, taskSlug);
+
+  return next;
 }
 
 /** Модуль, в который входит задача (для навигации со страницы задачи) */

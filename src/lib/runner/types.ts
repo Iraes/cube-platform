@@ -69,6 +69,10 @@ export type AlgorithmTask = {
   tests: AlgoTestCase[];
 };
 
+/**
+ * Одна проверка DOM-задачи. `body` — исходник, который исполняется
+ * в песочнице; внутри доступны find/click/typeInto/sleep/assert/assertEqual.
+ */
 export type DomCheck = { name: string; body: string };
 
 export type DomTask = {
@@ -77,7 +81,10 @@ export type DomTask = {
   title: string;
   description: string;
   language: 'javascript';
+  /** Разметка фрагмента страницы, с которым работает ученик */
   html: string;
+  /** Стили фрагмента: их пишет «дизайнер», ученик их только использует */
+  css?: string;
   starterCode: string;
   checks: DomCheck[];
 };

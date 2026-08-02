@@ -16,6 +16,7 @@ import {
   moveModule,
   moveTask,
   setLessonDemo,
+  setModuleDemoOnly,
   setTaskDemo,
   updateLesson,
   updateModule,
@@ -269,6 +270,14 @@ export async function moveLessonAction(formData: FormData): Promise<void> {
 // ---------- Демо-доступ ----------
 
 /** Открыть или закрыть урок в демо: он станет виден без входа на платформу */
+export async function setModuleDemoOnlyAction(formData: FormData): Promise<void> {
+  await requireAdmin();
+
+  const id = text(formData, "id");
+  if (id) await setModuleDemoOnly(id, text(formData, "isDemoOnly") === "1");
+  refreshContent();
+}
+
 export async function setLessonDemoAction(formData: FormData): Promise<void> {
   await requireAdmin();
 

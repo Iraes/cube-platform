@@ -119,6 +119,12 @@ export async function updateModule(
     .where(eq(modules.id, id));
 }
 
+/** Витрина: модуль пропадает из списка на платформе и целиком уходит в демо */
+export async function setModuleDemoOnly(id: string, isDemoOnly: boolean) {
+  const db = await getDb();
+  await db.update(modules).set({ isDemoOnly }).where(eq(modules.id, id));
+}
+
 export async function deleteModule(id: string) {
   const db = await getDb();
   await db.delete(modules).where(eq(modules.id, id));

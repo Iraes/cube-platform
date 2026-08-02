@@ -1,4 +1,5 @@
 import { browserJsRunner } from './browserJsRunner';
+import { iframeDomRunner } from './iframeDomRunner';
 import type { RunOptions, RunResult, Runner, Task } from './types';
 
 export * from './types';
@@ -19,14 +20,14 @@ function notImplementedRunner(kind: Task['kind']): Runner {
 
 /**
  * Единственное место, где тип задачи превращается в исполнителя.
- * Здесь же появятся iframeDomRunner (этап 1b) и серверный раннер для Go.
+ * Здесь же появится серверный раннер для Go.
  */
 export function getRunner(task: Task): Runner {
   switch (task.kind) {
     case 'algorithm':
       return browserJsRunner;
     case 'dom':
-      return notImplementedRunner('dom');
+      return iframeDomRunner;
     case 'quiz':
       // У теста нет кода: ответы проверяет сервер, экран свой
       return notImplementedRunner('quiz');

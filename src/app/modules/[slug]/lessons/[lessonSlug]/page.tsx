@@ -56,6 +56,7 @@ export default async function LessonPage({
     <LessonView
       moduleSlug={module.slug}
       moduleTitle={module.title}
+      lessonSlug={lesson.slug}
       lessonTitle={lesson.title}
       lessonSummary={lesson.summary}
       lessonId={lesson.id}

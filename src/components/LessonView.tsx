@@ -20,6 +20,7 @@ import { postLessonRead } from "@/lib/progressClient";
 type Props = {
   moduleSlug: string;
   moduleTitle: string;
+  lessonSlug: string;
   lessonTitle: string;
   lessonSummary: string;
   lessonId: string;
@@ -38,6 +39,7 @@ type Props = {
 export function LessonView({
   moduleSlug,
   moduleTitle,
+  lessonSlug,
   lessonTitle,
   lessonSummary,
   lessonId,
@@ -144,7 +146,9 @@ export function LessonView({
                   {block.note && <p className="mt-0.5 text-[13px] text-muted">{block.note}</p>}
                 </div>
                 <Link
-                  href={`/tasks/${block.slug}`}
+                  // from — чтобы со страницы задачи можно было вернуться
+                  // в этот урок, а «дальше» вело к следующему уроку
+                  href={`/tasks/${block.slug}?from=${encodeURIComponent(lessonSlug)}`}
                   prefetch={false}
                   className="h-9 shrink-0 rounded-md bg-accent px-4 text-[13.5px] font-semibold leading-9 text-accent-fg transition-colors hover:bg-accent-strong"
                 >

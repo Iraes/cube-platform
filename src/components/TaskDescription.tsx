@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { DemoNotice } from "@/components/DemoNotice";
 import { Markdown } from "@/components/Markdown";
-import type { Step } from "@/lib/content/types";
+import type { BackLink, Step } from "@/lib/content/types";
 import type { CodeTask } from "@/lib/runner/types";
 
 type Props = {
@@ -10,6 +10,8 @@ type Props = {
   moduleTitle?: string;
   solved?: boolean;
   isDemo?: boolean;
+  /** Куда возвращаться: по умолчанию модуль, из урока — в этот урок */
+  backTo?: BackLink;
   /** Следующий шаг модуля — ссылка видна всегда, а не только после сдачи */
   nextStep?: Step;
 };
@@ -20,10 +22,11 @@ export function TaskDescription({
   moduleTitle,
   solved,
   isDemo,
+  backTo,
   nextStep,
 }: Props) {
-  const backHref = isDemo ? "/demo" : moduleSlug ? `/modules/${moduleSlug}` : "/";
-  const backLabel = isDemo ? "Демо-доступ" : (moduleTitle ?? "Все модули");
+  const backHref = backTo?.href ?? (isDemo ? "/demo" : moduleSlug ? `/modules/${moduleSlug}` : "/");
+  const backLabel = backTo?.label ?? (isDemo ? "Демо-доступ" : (moduleTitle ?? "Все модули"));
 
   return (
     <section className="h-full overflow-y-auto bg-surface p-5">
