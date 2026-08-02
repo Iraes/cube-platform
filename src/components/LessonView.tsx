@@ -5,15 +5,23 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { BugReportButton } from "@/components/BugReportButton";
 import { DemoNotice } from "@/components/DemoNotice";
+import { LessonQuiz } from "@/components/LessonQuiz";
 import { Markdown } from "@/components/Markdown";
 import { VideoEmbed } from "@/components/VideoEmbed";
-import type { Lesson, Step } from "@/lib/content/types";
+import type { Step } from "@/lib/content/types";
+import type { PublicLessonBlock } from "@/lib/quiz";
 import { postLessonRead } from "@/lib/progressClient";
 
+/**
+ * Урок приходит разобранным на части, а не одним объектом: целиком он тянет
+ * за собой верные ответы встроенных тестов, а всё, что попадает в пропсы
+ * клиентского компонента, видно в исходниках страницы.
+ */
 type Props = {
   moduleSlug: string;
   moduleTitle: string;
-  lesson: Lesson;
+  lessonTitle: string;
+  lessonSummary: string;
   lessonId: string;
   read: boolean;
   /** Следующий шаг модуля: урок или первая задача */
@@ -23,18 +31,22 @@ type Props = {
   isDemo?: boolean;
   /** Названия задач для блоков-переходов: slug → заголовок */
   taskTitles?: Record<string, string>;
+  /** Блоки без верных ответов — их вырезает сервер */
+  blocks: PublicLessonBlock[];
 };
 
 export function LessonView({
   moduleSlug,
   moduleTitle,
-  lesson,
+  lessonTitle,
+  lessonSummary,
   lessonId,
   read,
   nextStep,
   position,
   isDemo = false,
   taskTitles = {},
+  blocks,
 }: Props) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -81,18 +93,18 @@ export function LessonView({
         <BugReportButton
           contextKind="lesson"
           contextId={lessonId}
-          contextTitle={lesson.title}
+          contextTitle={lessonTitle}
           className="ml-auto"
         />
       </div>
 
-      <h1 className="mb-1.5 text-2xl font-semibold tracking-tight text-text">{lesson.title}</h1>
-      <p className="mb-6 text-[14px] text-muted">{lesson.summary}</p>
+      <h1 className="mb-1.5 text-2xl font-semibold tracking-tight text-text">{lessonTitle}</h1>
+      <p className="mb-6 text-[14px] text-muted">{lessonSummary}</p>
 
       {isDemo && <DemoNotice />}
 
       <div className="space-y-7">
-        {lesson.blocks.map((block, index) => {
+        {blocks.map((block, index) => {
           if (block.type === "text") {
             return (
               <div key={index} className="prose-lesson text-muted">
@@ -103,6 +115,18 @@ export function LessonView({
 
           if (block.type === "video") {
             return <VideoEmbed key={index} url={block.url} title={block.title} note={block.note} />;
+          }
+
+          if (block.type === "quiz") {
+            return (
+              <LessonQuiz
+                key={index}
+                lessonId={lessonId}
+                blockIndex={index}
+                title={block.title}
+                questions={block.questions}
+              />
+            );
           }
 
           // Переход из теории сразу к практике

@@ -82,7 +82,38 @@ export type DomTask = {
   checks: DomCheck[];
 };
 
-export type Task = AlgorithmTask | DomTask;
+export type QuizOption = { id: string; text: string };
+
+export type QuizQuestion = {
+  id: string;
+  text: string;
+  options: QuizOption[];
+  /**
+   * Идентификаторы верных вариантов. Если их несколько — вопрос
+   * с мультивыбором, и засчитывается только полное совпадение.
+   */
+  correct: string[];
+  /** Разбор, который показываем после проверки */
+  explanation?: string;
+};
+
+/**
+ * Тест с выбором вариантов. В отличие от задач с кодом, здесь нечего
+ * исполнять: ответы сверяет сервер, чтобы правильные варианты
+ * не уезжали в браузер вместе со страницей.
+ */
+export type QuizTask = {
+  kind: 'quiz';
+  slug: string;
+  title: string;
+  description: string;
+  questions: QuizQuestion[];
+};
+
+/** Задачи, где ученик пишет код: у них есть starterCode и свой исполнитель */
+export type CodeTask = AlgorithmTask | DomTask;
+
+export type Task = CodeTask | QuizTask;
 
 /**
  * `run`    — выполнить код и показать вывод, ничего не проверяя (черновик);

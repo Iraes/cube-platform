@@ -3,6 +3,7 @@ import { LessonView } from "@/components/LessonView";
 import { findLesson, getModuleBySlug, getNextStep } from "@/lib/content";
 import { EMPTY_PROGRESS, getUserProgress } from "@/lib/progress";
 import { getSessionUser } from "@/lib/session";
+import { toPublicBlocks } from "@/lib/quiz";
 import { getTask } from "@/lib/tasks";
 
 export async function generateMetadata({
@@ -55,13 +56,15 @@ export default async function LessonPage({
     <LessonView
       moduleSlug={module.slug}
       moduleTitle={module.title}
-      lesson={lesson}
+      lessonTitle={lesson.title}
+      lessonSummary={lesson.summary}
       lessonId={lesson.id}
       read={progress.readLessons.includes(lesson.id)}
       nextStep={nextAllowed ? nextStep : undefined}
       position={{ index: index + 1, total: module.lessons.length }}
       isDemo={!user}
       taskTitles={taskTitles}
+      blocks={toPublicBlocks(lesson.blocks)}
     />
   );
 }

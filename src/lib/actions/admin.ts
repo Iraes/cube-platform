@@ -30,6 +30,7 @@ import {
 import { getTask } from "@/lib/tasks";
 import { requireAdmin } from "@/lib/session";
 import type { LessonBlock } from "@/lib/content/types";
+import type { QuizQuestion } from "@/lib/runner/types";
 
 export type ActionState = { error?: string; ok?: string };
 
@@ -119,6 +120,58 @@ export async function createLessonAction(formData: FormData): Promise<void> {
   redirect(`/admin/modules/${moduleId}/lessons/${lesson.id}`);
 }
 
+/**
+ * Вопросы теста из формы. Отбрасываем недоделанные: без текста,
+ * без двух вариантов или без единого отмеченного верного ответа —
+ * иначе такой вопрос нельзя пройти.
+ */
+function parseQuestions(raw: unknown[]): QuizQuestion[] {
+  const questions: QuizQuestion[] = [];
+
+  for (const item of raw) {
+    if (!item || typeof item !== "object") continue;
+    const source = item as Record<string, unknown>;
+
+    if (typeof source.id !== "string" || typeof source.text !== "string") continue;
+    if (!source.text.trim() || !Array.isArray(source.options)) continue;
+
+    const options = source.options
+      .filter(
+        (option): option is { id: string; text: string } =>
+          Boolean(option) &&
+          typeof option === "object" &&
+          typeof (option as { id?: unknown }).id === "string" &&
+          typeof (option as { text?: unknown }).text === "string" &&
+          Boolean((option as { text: string }).text.trim()),
+      )
+      .map((option) => ({ id: option.id, text: option.text.trim() }));
+
+    if (options.length < 2) continue;
+
+    const correct = Array.isArray(source.correct)
+      ? source.correct.filter(
+          (id): id is string =>
+            typeof id === "string" && options.some((option) => option.id === id),
+        )
+      : [];
+
+    if (correct.length === 0) continue;
+
+    questions.push({
+      id: source.id,
+      text: source.text.trim(),
+      options,
+      correct,
+      explanation:
+        typeof source.explanation === "string" && source.explanation.trim()
+          ? source.explanation.trim()
+          : undefined,
+    });
+  }
+
+  return questions;
+}
+
 function parseBlocks(raw: string): LessonBlock[] {
   let parsed: unknown;
   try {
@@ -155,6 +208,15 @@ function parseBlocks(raw: string): LessonBlock[] {
         source: typeof block.source === "string" ? block.source : undefined,
         note: typeof block.note === "string" ? block.note : undefined,
       });
+    } else if (block.type === "quiz" && Array.isArray(block.questions)) {
+      const questions = parseQuestions(block.questions);
+      if (questions.length > 0) {
+        blocks.push({
+          type: "quiz",
+          title: typeof block.title === "string" ? block.title : undefined,
+          questions,
+        });
+      }
     } else if (block.type === "task" && typeof block.slug === "string" && getTask(block.slug)) {
       blocks.push({
         type: "task",

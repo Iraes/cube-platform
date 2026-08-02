@@ -1,5 +1,7 @@
 import { notFound, redirect } from "next/navigation";
+import { QuizWorkspace } from "@/components/QuizWorkspace";
 import { TaskWorkspace } from "@/components/TaskWorkspace";
+import { toPublicQuestions } from "@/lib/quiz";
 import { getModuleForTask, getNextStep } from "@/lib/content";
 import { EMPTY_PROGRESS, getUserProgress } from "@/lib/progress";
 import { getSessionUser } from "@/lib/session";
@@ -30,6 +32,23 @@ export default async function TaskPage({ params }: { params: Promise<{ slug: str
     (nextStep?.kind === "task"
       ? (module?.demoTaskSlugs.includes(nextStep.id) ?? false)
       : (module?.lessons.some((item) => item.id === nextStep?.id && item.isDemo) ?? false));
+
+  // Тест исполнять нечего: у него свой экран и серверная проверка ответов
+  if (task.kind === "quiz") {
+    return (
+      <QuizWorkspace
+        slug={task.slug}
+        title={task.title}
+        description={task.description}
+        questions={toPublicQuestions(task)}
+        solved={progress.solvedTasks.includes(slug)}
+        moduleSlug={module?.slug}
+        moduleTitle={module?.title}
+        nextStep={nextAllowed ? nextStep : undefined}
+        isDemo={!user}
+      />
+    );
+  }
 
   return (
     <TaskWorkspace

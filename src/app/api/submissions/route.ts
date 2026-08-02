@@ -1,3 +1,4 @@
+import { isMissingUserError } from "@/lib/db/errors";
 import { getSessionUser } from "@/lib/session";
 import { recordSubmission } from "@/lib/progress";
 import { getTask } from "@/lib/tasks";
@@ -32,12 +33,20 @@ export async function POST(request: Request) {
     return Response.json({ error: "Некорректные данные" }, { status: 400 });
   }
 
-  await recordSubmission({
-    userId: user.id,
-    taskSlug,
-    code: code.slice(0, MAX_CODE_LENGTH),
-    passed,
-  });
+  try {
+    await recordSubmission({
+      userId: user.id,
+      taskSlug,
+      code: code.slice(0, MAX_CODE_LENGTH),
+      passed,
+    });
+  } catch (error) {
+    // Учётку удалили, а вкладка осталась открытой
+    if (isMissingUserError(error)) {
+      return Response.json({ error: "session-expired" }, { status: 401 });
+    }
+    throw error;
+  }
 
   return Response.json({ ok: true });
 }

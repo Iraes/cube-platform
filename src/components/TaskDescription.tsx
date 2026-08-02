@@ -2,10 +2,10 @@ import Link from "next/link";
 import { DemoNotice } from "@/components/DemoNotice";
 import { Markdown } from "@/components/Markdown";
 import type { Step } from "@/lib/content/types";
-import type { Task } from "@/lib/runner/types";
+import type { CodeTask } from "@/lib/runner/types";
 
 type Props = {
-  task: Task;
+  task: CodeTask;
   moduleSlug?: string;
   moduleTitle?: string;
   solved?: boolean;

@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
+import { QuizBlockEditor, emptyQuestion } from "@/components/admin/QuizBlockEditor";
 import { saveLessonAction, type ActionState } from "@/lib/actions/admin";
 import type { Lesson, LessonBlock, LessonBlockType } from "@/lib/content/types";
 
@@ -16,6 +17,7 @@ const BLOCK_LABELS: Record<LessonBlockType, string> = {
   video: "Видео",
   article: "Статья",
   task: "Задача",
+  quiz: "Тест",
 };
 
 type TaskOption = { slug: string; title: string };
@@ -24,6 +26,7 @@ function emptyBlock(type: LessonBlockType, tasks: TaskOption[]): LessonBlock {
   if (type === "text") return { type: "text", markdown: "" };
   if (type === "video") return { type: "video", url: "", title: "" };
   if (type === "task") return { type: "task", slug: tasks[0]?.slug ?? "" };
+  if (type === "quiz") return { type: "quiz", title: "", questions: [emptyQuestion()] };
   return { type: "article", url: "", title: "", source: "" };
 }
 
@@ -164,6 +167,21 @@ export function LessonEditor({
                   onChange={(event) => update(index, { note: event.target.value })}
                   placeholder="Пояснение под плеером (необязательно)"
                   className={inputClass}
+                />
+              </div>
+            )}
+
+            {block.type === "quiz" && (
+              <div className="space-y-3">
+                <input
+                  value={block.title ?? ""}
+                  onChange={(event) => update(index, { title: event.target.value })}
+                  placeholder="Заголовок теста, по умолчанию «Проверь себя»"
+                  className={inputClass}
+                />
+                <QuizBlockEditor
+                  questions={block.questions}
+                  onChange={(questions) => update(index, { questions })}
                 />
               </div>
             )}

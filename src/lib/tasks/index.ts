@@ -1,5 +1,6 @@
 import type { Task } from '@/lib/runner/types';
 import { countChars } from './count-chars';
+import { dataTypesQuiz } from './data-types-quiz';
 import { errors } from './errors';
 import { filterEven } from './filter-even';
 import { fizzBuzz } from './fizz-buzz';
@@ -18,6 +19,7 @@ export const tasks: Task[] = [
   countChars,
   fizzBuzz,
   errors,
+  dataTypesQuiz,
 ];
 
 export function getTask(slug: string): Task | undefined {

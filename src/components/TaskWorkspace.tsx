@@ -8,12 +8,12 @@ import { CodeEditor } from "@/components/CodeEditor";
 import { ConsolePanel } from "@/components/ConsolePanel";
 import { TaskDescription } from "@/components/TaskDescription";
 import { runCode } from "@/lib/runner";
-import type { RunMode, RunResult, Task } from "@/lib/runner/types";
+import type { CodeTask, RunMode, RunResult } from "@/lib/runner/types";
 import type { Step } from "@/lib/content/types";
 import { postSubmission } from "@/lib/progressClient";
 
 type Props = {
-  task: Task;
+  task: CodeTask;
   solved: boolean;
   moduleSlug?: string;
   moduleTitle?: string;

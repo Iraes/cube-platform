@@ -27,6 +27,9 @@ export function getRunner(task: Task): Runner {
       return browserJsRunner;
     case 'dom':
       return notImplementedRunner('dom');
+    case 'quiz':
+      // У теста нет кода: ответы проверяет сервер, экран свой
+      return notImplementedRunner('quiz');
     default: {
       const exhaustive: never = task;
       return notImplementedRunner((exhaustive as Task).kind);

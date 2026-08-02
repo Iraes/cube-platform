@@ -1,3 +1,5 @@
+import type { QuizQuestion } from "@/lib/runner/types";
+
 /**
  * Учебные материалы. Хранятся в БД и редактируются в админке;
  * файлы в `seed/` — только стартовое наполнение при первом запуске.
@@ -11,7 +13,12 @@ export type LessonBlock =
   /** Ссылка на внешнюю статью — открывается в новой вкладке */
   | { type: "article"; url: string; title: string; source?: string; note?: string }
   /** Кнопка-переход на задачу платформы: из теории сразу к практике */
-  | { type: "task"; slug: string; note?: string };
+  | { type: "task"; slug: string; note?: string }
+  /**
+   * Тест прямо в уроке — самопроверка сразу после теории.
+   * Ответы сверяет сервер, в браузер верные варианты не уезжают.
+   */
+  | { type: "quiz"; title?: string; questions: QuizQuestion[] };
 
 export type LessonBlockType = LessonBlock["type"];
 

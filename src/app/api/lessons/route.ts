@@ -1,4 +1,5 @@
 import { isKnownLessonId } from "@/lib/content";
+import { isMissingUserError } from "@/lib/db/errors";
 import { markLessonRead } from "@/lib/progress";
 import { getSessionUser } from "@/lib/session";
 
@@ -21,7 +22,15 @@ export async function POST(request: Request) {
     return Response.json({ error: "Неизвестный урок" }, { status: 400 });
   }
 
-  await markLessonRead(user.id, lessonId);
+  try {
+    await markLessonRead(user.id, lessonId);
+  } catch (error) {
+    // Учётку удалили, а вкладка осталась открытой
+    if (isMissingUserError(error)) {
+      return Response.json({ error: "session-expired" }, { status: 401 });
+    }
+    throw error;
+  }
 
   return Response.json({ ok: true });
 }
