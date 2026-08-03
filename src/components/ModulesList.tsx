@@ -11,6 +11,7 @@ export type ModuleCard = {
   lessonCount: number;
   taskCount: number;
   steps: Step[];
+  blockId: string | null;
 };
 
 type Props = {

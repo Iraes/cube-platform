@@ -1,9 +1,9 @@
 import { cache } from "react";
 import { asc, eq } from "drizzle-orm";
 import { batch, getDb } from "@/lib/db";
-import { lessons, moduleTasks, modules } from "@/lib/db/schema";
+import { courseBlocks, lessons, moduleTasks, modules } from "@/lib/db/schema";
 import { getTask } from "@/lib/tasks";
-import type { Lesson, Module, Step } from "./types";
+import type { CourseBlock, Lesson, Module, Step } from "./types";
 
 export * from "./types";
 
@@ -35,6 +35,7 @@ export const getModules = cache(async (): Promise<Module[]> => {
       slug: row.slug,
       title: row.title,
       description: row.description,
+      blockId: row.blockId,
       isDemoOnly: demoOnly,
       lessons: lessonRows
         .filter((lesson) => lesson.moduleId === row.id)
@@ -54,6 +55,14 @@ export const getModules = cache(async (): Promise<Module[]> => {
         .map((task) => task.taskSlug),
     };
   });
+});
+
+export const getCourseBlocks = cache(async (): Promise<CourseBlock[]> => {
+  const db = await getDb();
+  return db
+    .select()
+    .from(courseBlocks)
+    .orderBy(asc(courseBlocks.position), asc(courseBlocks.createdAt));
 });
 
 export const getModuleBySlug = cache(async (slug: string): Promise<Module | undefined> => {

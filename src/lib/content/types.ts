@@ -37,6 +37,7 @@ export type Module = {
   slug: string;
   title: string;
   description: string;
+  blockId: string | null;
   /** Сначала проходят уроки… */
   lessons: Lesson[];
   /** …потом решают эти задачи (slug из src/lib/tasks) */
@@ -49,6 +50,14 @@ export type Module = {
    * независимо от их собственных отметок.
    */
   isDemoOnly: boolean;
+};
+
+export type CourseBlock = {
+  id: string;
+  slug: string;
+  title: string;
+  description: string;
+  position: number;
 };
 
 /** Шаг прохождения модуля: урок или задача */

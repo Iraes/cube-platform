@@ -21,7 +21,7 @@ export const users = pgTable("users", {
   email: text("email").notNull().unique(),
   name: text("name"),
   passwordHash: text("password_hash").notNull(),
-  // admin — доступ к разделу /admin; teacher пригодится на этапе 4 (трекер)
+  // admin — раздел /admin; teacher — раздел /students с прогрессом учеников
   role: text("role", { enum: ["student", "teacher", "admin"] })
     .notNull()
     .default("student"),
@@ -47,6 +47,16 @@ export const submissions = pgTable(
   (table) => [index("submissions_user_task_idx").on(table.userId, table.taskSlug)],
 );
 
+/** Блок курса объединяет несколько модулей в крупный этап обучения. */
+export const courseBlocks = pgTable("course_blocks", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  slug: text("slug").notNull().unique(),
+  title: text("title").notNull(),
+  description: text("description").notNull().default(""),
+  position: integer("position").notNull().default(0),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
 /**
  * Учебные модули. Раньше лежали файлами в репозитории; переехали в БД,
  * чтобы владелец редактировал их в админке без правки кода и деплоя.
@@ -57,6 +67,7 @@ export const modules = pgTable("modules", {
   title: text("title").notNull(),
   description: text("description").notNull().default(""),
   position: integer("position").notNull().default(0),
+  blockId: uuid("block_id").references(() => courseBlocks.id, { onDelete: "set null" }),
   /**
    * Витринный модуль: не показывается в списке модулей на платформе,
    * а всё его содержимое открыто в демо-доступе. Отметки «в демо»
@@ -151,3 +162,4 @@ export type UserRow = typeof users.$inferSelect;
 export type BugReportRow = typeof bugReports.$inferSelect;
 export type ModuleRow = typeof modules.$inferSelect;
 export type LessonRow = typeof lessons.$inferSelect;
+export type CourseBlockRow = typeof courseBlocks.$inferSelect;

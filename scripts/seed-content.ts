@@ -1,9 +1,12 @@
 import "./env";
 import { eq } from "drizzle-orm";
 import { getDb } from "@/lib/db";
-import { lessons, moduleTasks, modules } from "@/lib/db/schema";
+import { courseBlocks, lessons, moduleTasks, modules } from "@/lib/db/schema";
 import { collections } from "@/lib/content/seed/collections";
 import { jsBasics } from "@/lib/content/seed/js-basics";
+import { referenceTypes } from "@/lib/content/seed/reference-types";
+import { advancedFunctions } from "@/lib/content/seed/advanced-functions";
+import { arrayIteration } from "@/lib/content/seed/array-iteration";
 import type { SeedModule } from "@/lib/content/types";
 
 /**
@@ -14,7 +17,16 @@ import type { SeedModule } from "@/lib/content/types";
  *   npm run db:seed          — добавит недостающие модули
  *   npm run db:seed -- --force — пересоздаст их с нуля
  */
-const SEED: SeedModule[] = [jsBasics, collections];
+const SEED: SeedModule[] = [jsBasics, collections, referenceTypes, advancedFunctions, arrayIteration];
+
+const SEED_BLOCKS = [
+  {
+    slug: "js-core-main-concepts",
+    title: "JS Core · Основные концепции",
+    description: "Базовые конструкции языка, ссылочные типы, функции и перебор массивов.",
+    moduleSlugs: ["reference-types", "advanced-functions", "array-iteration"],
+  },
+];
 
 async function main() {
   const force = process.argv.includes("--force");
@@ -70,6 +82,31 @@ async function main() {
     console.log(
       `Добавлен модуль «${seed.title}»: уроков ${seed.lessons.length}, задач ${seed.taskSlugs.length}`,
     );
+  }
+
+  for (const [position, seedBlock] of SEED_BLOCKS.entries()) {
+    let [block] = await db
+      .select()
+      .from(courseBlocks)
+      .where(eq(courseBlocks.slug, seedBlock.slug))
+      .limit(1);
+
+    if (!block) {
+      [block] = await db
+        .insert(courseBlocks)
+        .values({
+          slug: seedBlock.slug,
+          title: seedBlock.title,
+          description: seedBlock.description,
+          position,
+        })
+        .returning();
+      console.log(`Добавлен блок «${seedBlock.title}»`);
+    }
+
+    for (const moduleSlug of seedBlock.moduleSlugs) {
+      await db.update(modules).set({ blockId: block.id }).where(eq(modules.slug, moduleSlug));
+    }
   }
 
   console.log("Готово");

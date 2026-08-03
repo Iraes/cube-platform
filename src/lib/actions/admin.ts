@@ -7,17 +7,21 @@ import { getDb } from "@/lib/db";
 import { bugReports } from "@/lib/db/schema";
 import {
   attachTask,
+  createCourseBlock,
   createLesson,
   createModule,
   deleteLesson,
   deleteModule,
+  deleteCourseBlock,
   detachTask,
   moveLesson,
   moveModule,
+  moveCourseBlock,
   moveTask,
   setLessonDemo,
   setModuleDemoOnly,
   setTaskDemo,
+  setModuleBlock,
   updateLesson,
   updateModule,
 } from "@/lib/db/content";
@@ -61,6 +65,38 @@ function text(formData: FormData, key: string): string {
 }
 
 // ---------- Модули ----------
+
+export async function createCourseBlockAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  await requireAdmin();
+  const title = text(formData, "title");
+  if (!title) return { error: "Введите название блока" };
+  await createCourseBlock({ title, description: text(formData, "description") });
+  refreshContent();
+  return { ok: "Блок создан" };
+}
+
+export async function deleteCourseBlockAction(formData: FormData): Promise<void> {
+  await requireAdmin();
+  const id = text(formData, "id");
+  if (id) await deleteCourseBlock(id);
+  refreshContent();
+}
+
+export async function moveCourseBlockAction(formData: FormData): Promise<void> {
+  await requireAdmin();
+  const id = text(formData, "id");
+  const direction = text(formData, "direction") === "up" ? "up" : "down";
+  if (id) await moveCourseBlock(id, direction);
+  refreshContent();
+}
+
+export async function setModuleBlockAction(formData: FormData): Promise<void> {
+  await requireAdmin();
+  const moduleId = text(formData, "moduleId");
+  const blockId = text(formData, "blockId");
+  if (moduleId) await setModuleBlock(moduleId, blockId || null);
+  refreshContent();
+}
 
 export async function createModuleAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
   await requireAdmin();

@@ -1,6 +1,6 @@
 import { and, asc, eq, sql } from "drizzle-orm";
 import { getDb } from "./index";
-import { lessons, moduleTasks, modules } from "./schema";
+import { courseBlocks, lessons, moduleTasks, modules } from "./schema";
 import type { LessonBlock } from "@/lib/content/types";
 
 /**
@@ -44,6 +44,52 @@ async function nextPosition(table: typeof modules | typeof lessons, moduleId?: s
     .select({ max: sql<number>`coalesce(max(${modules.position}), -1)` })
     .from(modules);
   return (row?.max ?? -1) + 1;
+}
+
+async function nextBlockPosition() {
+  const db = await getDb();
+  const [row] = await db
+    .select({ max: sql<number>`coalesce(max(${courseBlocks.position}), -1)` })
+    .from(courseBlocks);
+  return (row?.max ?? -1) + 1;
+}
+
+export async function createCourseBlock(input: { title: string; description?: string }) {
+  const db = await getDb();
+  const base = toSlug(input.title);
+  let slug = base;
+  for (let attempt = 2; ; attempt += 1) {
+    const rows = await db.select({ id: courseBlocks.id }).from(courseBlocks).where(eq(courseBlocks.slug, slug)).limit(1);
+    if (rows.length === 0) break;
+    slug = `${base}-${attempt}`;
+  }
+  const [row] = await db.insert(courseBlocks).values({
+    slug,
+    title: input.title,
+    description: input.description ?? "",
+    position: await nextBlockPosition(),
+  }).returning();
+  return row;
+}
+
+export async function deleteCourseBlock(id: string) {
+  const db = await getDb();
+  await db.delete(courseBlocks).where(eq(courseBlocks.id, id));
+}
+
+export async function moveCourseBlock(id: string, direction: "up" | "down") {
+  const db = await getDb();
+  const all = await db.select().from(courseBlocks).orderBy(asc(courseBlocks.position), asc(courseBlocks.createdAt));
+  const index = all.findIndex((row) => row.id === id);
+  const swapWith = direction === "up" ? index - 1 : index + 1;
+  if (index === -1 || swapWith < 0 || swapWith >= all.length) return;
+  await db.update(courseBlocks).set({ position: swapWith }).where(eq(courseBlocks.id, all[index].id));
+  await db.update(courseBlocks).set({ position: index }).where(eq(courseBlocks.id, all[swapWith].id));
+}
+
+export async function setModuleBlock(moduleId: string, blockId: string | null) {
+  const db = await getDb();
+  await db.update(modules).set({ blockId }).where(eq(modules.id, moduleId));
 }
 
 /** Свободный слаг: к занятому дописывается -2, -3 и так далее */
