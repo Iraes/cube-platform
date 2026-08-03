@@ -38,3 +38,14 @@ export async function requireAdmin(): Promise<SessionUser> {
   if (user.role !== "admin") redirect("/");
   return user;
 }
+
+/**
+ * Для раздела с прогрессом учеников. Администратор проходит тоже: он и так
+ * может всё, отдельная роль нужна тем, кто ведёт учеников, но не правит
+ * платформу.
+ */
+export async function requireTeacher(): Promise<SessionUser> {
+  const user = await requireUser();
+  if (user.role !== "teacher" && user.role !== "admin") redirect("/");
+  return user;
+}

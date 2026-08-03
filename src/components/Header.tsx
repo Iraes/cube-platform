@@ -19,6 +19,15 @@ export async function Header() {
 
       <ThemeSelect />
 
+      {(user?.role === "teacher" || user?.role === "admin") && (
+        <Link
+          href="/students"
+          className="rounded-md border border-border px-3 py-1.5 text-[13px] text-muted transition-colors hover:bg-hover hover:text-text"
+        >
+          Ученики
+        </Link>
+      )}
+
       {user?.role === "admin" && (
         <Link
           href="/admin"
