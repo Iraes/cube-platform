@@ -34,6 +34,14 @@ import { getField } from './get-field';
 import { createUsernames } from './create-usernames';
 import { calculatePrice } from './calculate-price';
 import { mostSenior } from './most-senior';
+import { invertObject } from './invert-object';
+import { deepEqualTask } from './deep-equal';
+import { sumRest } from './sum-rest';
+import { mergeObjects } from './merge-objects';
+import { languagesStatistic } from './languages-statistic';
+import { arrayCountsMap } from './array-counts-map';
+import { uniqueSet } from './unique-set';
+import { daysBetweenDates } from './days-between-dates';
 
 /**
  * Каталог задач. Хранится файлами в репозитории, а не в БД:
@@ -76,6 +84,14 @@ export const tasks: Task[] = [
   createUsernames,
   calculatePrice,
   mostSenior,
+  invertObject,
+  deepEqualTask,
+  sumRest,
+  mergeObjects,
+  languagesStatistic,
+  arrayCountsMap,
+  uniqueSet,
+  daysBetweenDates,
 ];
 
 export function getTask(slug: string): Task | undefined {

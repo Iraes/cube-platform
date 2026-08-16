@@ -7,6 +7,7 @@ import { jsBasics } from "@/lib/content/seed/js-basics";
 import { referenceTypes } from "@/lib/content/seed/reference-types";
 import { advancedFunctions } from "@/lib/content/seed/advanced-functions";
 import { arrayIteration } from "@/lib/content/seed/array-iteration";
+import { objectsModule } from "@/lib/content/seed/objects";
 import type { SeedModule } from "@/lib/content/types";
 
 /**
@@ -17,14 +18,14 @@ import type { SeedModule } from "@/lib/content/types";
  *   npm run db:seed          — добавит недостающие модули
  *   npm run db:seed -- --force — пересоздаст их с нуля
  */
-const SEED: SeedModule[] = [jsBasics, collections, referenceTypes, advancedFunctions, arrayIteration];
+const SEED: SeedModule[] = [jsBasics, collections, referenceTypes, advancedFunctions, arrayIteration, objectsModule];
 
 const SEED_BLOCKS = [
   {
     slug: "js-core-main-concepts",
     title: "JS Core · Основные концепции",
     description: "Базовые конструкции языка, ссылочные типы, функции и перебор массивов.",
-    moduleSlugs: ["reference-types", "advanced-functions", "array-iteration"],
+    moduleSlugs: ["reference-types", "advanced-functions", "array-iteration", "objects"],
   },
 ];
 
