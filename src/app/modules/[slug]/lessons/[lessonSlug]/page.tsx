@@ -5,6 +5,7 @@ import { EMPTY_PROGRESS, getUserProgress } from "@/lib/progress";
 import { getSessionUser } from "@/lib/session";
 import { toPublicBlocks } from "@/lib/quiz";
 import { getTask } from "@/lib/tasks";
+import { getLessonTaskSlugs, isLessonUnlocked } from "@/lib/learningAccess";
 
 export async function generateMetadata({
   params,
@@ -32,7 +33,14 @@ export default async function LessonPage({
   if (!user && !lesson.isDemo) redirect("/login");
 
   const progress = user ? await getUserProgress(user.id) : EMPTY_PROGRESS;
+  if (user && !isLessonUnlocked(module, lesson.id, progress)) {
+    redirect(`/modules/${module.slug}`);
+  }
+
   const index = module.lessons.findIndex((item) => item.slug === lesson.slug);
+  const requiredTaskSlugs = getLessonTaskSlugs(lesson);
+  const solvedTasks = new Set(progress.solvedTasks);
+  const remainingTaskSlugs = requiredTaskSlugs.filter((taskSlug) => !solvedTasks.has(taskSlug));
 
   // В демо следующий шаг тоже должен быть демо, иначе упрёмся в форму входа
   const nextStep = getNextStep(module, lesson.id);
@@ -65,6 +73,7 @@ export default async function LessonPage({
       position={{ index: index + 1, total: module.lessons.length }}
       isDemo={!user}
       taskTitles={taskTitles}
+      remainingTaskTitles={remainingTaskSlugs.map((taskSlug) => taskTitles[taskSlug] ?? taskSlug)}
       blocks={toPublicBlocks(lesson.blocks)}
     />
   );

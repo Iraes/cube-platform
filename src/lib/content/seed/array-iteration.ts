@@ -1,4 +1,16 @@
-import type { SeedModule } from '@/lib/content/types';
+import type { LessonBlock, SeedModule } from '@/lib/content/types';
+
+function quickQuiz(id: string, text: string, options: string[], correct: number[], explanation: string): LessonBlock {
+  return {
+    type: 'quiz', title: 'Проверьте понимание',
+    questions: [{
+      id, text,
+      options: options.map((option, index) => ({ id: `${id}-${index}`, text: option })),
+      correct: correct.map((index) => `${id}-${index}`),
+      explanation,
+    }],
+  };
+}
 
 export const arrayIteration: SeedModule = {
   slug: 'array-iteration',
@@ -21,6 +33,8 @@ const square = value => value * value;
         { type: 'video', url: 'https://vk.com/video-227259800_456239202', title: 'Основы JavaScript #18: Arrow functions' },
         { type: 'article', url: 'https://learn.javascript.ru/arrow-functions-basics', title: 'Стрелочные функции — основы', source: 'learn.javascript.ru' },
         { type: 'article', url: 'https://learn.javascript.ru/arrow-functions', title: 'Стрелочные функции — подробно', source: 'learn.javascript.ru' },
+        quickQuiz('arrow-functions', 'Какие особенности есть у стрелочных функций?', ['Нет собственного this', 'Нет собственного arguments', 'Всегда нужен return', 'Подходят для любого метода объекта'], [0, 1], 'Стрелки используют this и arguments внешнего окружения; выражение могут возвращать неявно.'),
+        { type: 'task', slug: 'arrow-function-factory', note: 'Напишите фабрику, возвращающую настроенную стрелочную функцию.' },
       ],
     },
     {
@@ -38,6 +52,7 @@ const square = value => value * value;
         { type: 'video', url: 'https://vk.com/video-227259800_456239203', title: 'Основы JavaScript #19: Перебирающие методы массивов' },
         { type: 'article', url: 'https://learn.javascript.ru/array-methods', title: 'Методы массивов', source: 'learn.javascript.ru' },
         { type: 'article', url: 'https://habr.com/ru/articles/483182/', title: 'Практика методов массивов', source: 'Хабр' },
+        quickQuiz('array-methods', 'Какой метод лучше выбрать для каждой цели?', ['map — преобразовать каждый элемент', 'filter — оставить подходящие элементы', 'reduce — получить одно итоговое значение', 'find — вернуть новый массив всех совпадений'], [0, 1, 2], 'find возвращает только первый найденный элемент, остальные соответствия верны.'),
         { type: 'task', slug: 'get-field', note: 'Преобразуйте объекты через map.' },
         { type: 'task', slug: 'create-usernames', note: 'Добавьте вычисляемое поле каждому пользователю.' },
         { type: 'task', slug: 'calculate-price', note: 'Сверните заказы в общую стоимость.' },
@@ -45,9 +60,9 @@ const square = value => value * value;
       ],
     },
     {
-      slug: 'module-checklist', title: 'Самопроверка по основным концепциям', summary: 'Что стоит уметь объяснить перед переходом дальше',
+      slug: 'module-checklist', title: 'Запись на ревью: Основные концепции', summary: 'Финальный урок блока и подготовка к ревью',
       blocks: [
-        { type: 'text', markdown: `Проверьте, можете ли вы своими словами объяснить и показать кодом:
+        { type: 'text', markdown: `Вы завершили учебные модули блока **«Основные концепции»**. Перед записью на ревью проверьте, можете ли вы своими словами объяснить и показать кодом:
 
 - типы данных и приведение типов;
 - хранение чисел и неточные вычисления;
@@ -61,9 +76,13 @@ const square = value => value * value;
 - отличия стрелочных функций от обычных;
 - применение \`map\`, \`filter\` и \`reduce\`.
 
-Если какой-то пункт вызывает затруднения, вернитесь к соответствующему уроку и попробуйте написать небольшой пример без подсказки.` },
+Если какой-то пункт вызывает затруднения, вернитесь к соответствующему уроку и попробуйте написать небольшой пример без подсказки.
+
+Когда будете готовы, согласуйте с преподавателем подходящий слот ревью.` },
+        quickQuiz('main-concepts-review', 'Какие утверждения верны?', ['Чистая функция не изменяет внешнее состояние', 'Замыкание сохраняет доступ к внешнему окружению', 'map изменяет исходный массив', 'Стрелочная функция создаёт собственный this'], [0, 1], 'map возвращает новый массив, а стрелочная функция использует внешний this.'),
+        { type: 'task', slug: 'analyze-numbers', note: 'Закрепите filter, map и reduce в одной небольшой функции.' },
       ],
     },
   ],
-  taskSlugs: ['get-field', 'create-usernames', 'calculate-price', 'most-senior'],
+  taskSlugs: ['arrow-function-factory', 'get-field', 'create-usernames', 'calculate-price', 'most-senior', 'analyze-numbers'],
 };

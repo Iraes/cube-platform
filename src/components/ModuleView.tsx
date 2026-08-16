@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ProgressBar } from "@/components/ProgressBar";
 import type { Module, Step } from "@/lib/content/types";
 import type { UserProgress } from "@/lib/progress";
+import { isStepUnlocked } from "@/lib/learningAccess";
 
 type Props = {
   module: Module;
@@ -51,8 +52,8 @@ export function ModuleView({ module, steps, progress }: Props) {
 
   const isDone = (step: Step) => (step.kind === "lesson" ? read.has(step.id) : solved.has(step.id));
 
-  const lessonSteps = steps.filter((step) => step.kind === "lesson");
-  const taskSteps = steps.filter((step) => step.kind === "task");
+  const lessonSteps = steps.filter((step) => step.kind === "lesson" && isStepUnlocked(module, step, progress));
+  const taskSteps = steps.filter((step) => step.kind === "task" && isStepUnlocked(module, step, progress));
 
   return (
     <main className="mx-auto max-w-3xl px-6 py-10">

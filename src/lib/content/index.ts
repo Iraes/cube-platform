@@ -79,6 +79,19 @@ export function findLesson(module: Module, lessonSlug: string): Lesson | undefin
   return module.lessons.find((lesson) => lesson.slug === lessonSlug);
 }
 
+export function getTaskLesson(module: Module, taskSlug: string): Lesson | undefined {
+  return module.lessons.find((lesson) =>
+    lesson.blocks.some((block) => block.type === "task" && block.slug === taskSlug),
+  );
+}
+
+export function getTaskHref(module: Module, taskSlug: string): string {
+  const lesson = getTaskLesson(module, taskSlug);
+  return lesson
+    ? `/tasks/${module.slug}/${lesson.slug}/${taskSlug}`
+    : `/tasks/${taskSlug}`;
+}
+
 /**
  * Полный маршрут по модулю: сначала уроки, потом задачи.
  * На этом списке строятся и прогресс, и кнопка «Дальше».
@@ -94,7 +107,7 @@ export function getSteps(module: Module): Step[] {
   const taskSteps: Step[] = module.taskSlugs.flatMap((slug) => {
     const task = getTask(slug);
     if (!task) return [];
-    return [{ kind: "task", id: slug, title: task.title, href: `/tasks/${slug}` }];
+    return [{ kind: "task", id: slug, title: task.title, href: getTaskHref(module, slug) }];
   });
 
   return [...lessonSteps, ...taskSteps];

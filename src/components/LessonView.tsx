@@ -32,6 +32,8 @@ type Props = {
   isDemo?: boolean;
   /** Названия задач для блоков-переходов: slug → заголовок */
   taskTitles?: Record<string, string>;
+  /** Нерешённые задачи этого урока — пока список не пуст, завершить урок нельзя. */
+  remainingTaskTitles?: string[];
   /** Блоки без верных ответов — их вырезает сервер */
   blocks: PublicLessonBlock[];
 };
@@ -48,6 +50,7 @@ export function LessonView({
   position,
   isDemo = false,
   taskTitles = {},
+  remainingTaskTitles = [],
   blocks,
 }: Props) {
   const router = useRouter();
@@ -55,6 +58,7 @@ export function LessonView({
   const [failed, setFailed] = useState(false);
 
   const fallbackHref = isDemo ? "/demo" : `/modules/${moduleSlug}`;
+  const canComplete = isDemo || remainingTaskTitles.length === 0;
 
   const goNext = () => {
     setFailed(false);
@@ -148,7 +152,7 @@ export function LessonView({
                 <Link
                   // from — чтобы со страницы задачи можно было вернуться
                   // в этот урок, а «дальше» вело к следующему уроку
-                  href={`/tasks/${block.slug}?from=${encodeURIComponent(lessonSlug)}`}
+                  href={`/tasks/${moduleSlug}/${lessonSlug}/${block.slug}`}
                   prefetch={false}
                   className="h-9 shrink-0 rounded-md bg-accent px-4 text-[13.5px] font-semibold leading-9 text-accent-fg transition-colors hover:bg-accent-strong"
                 >
@@ -185,7 +189,7 @@ export function LessonView({
         <button
           type="button"
           onClick={goNext}
-          disabled={pending}
+          disabled={pending || !canComplete}
           className="h-9 rounded-md bg-accent px-5 text-[14px] font-semibold text-accent-fg transition-colors hover:bg-accent-strong disabled:opacity-60"
         >
           {pending
@@ -200,6 +204,12 @@ export function LessonView({
                   : "Прочитано, следующий урок →"
                 : "Прочитано, к модулю →"}
         </button>
+
+        {!canComplete && (
+          <p className="basis-full text-[13px] leading-relaxed text-muted">
+            Чтобы отметить урок прочитанным, решите {remainingTaskTitles.length === 1 ? "задачу" : "все задачи"}: {remainingTaskTitles.join(", ")}.
+          </p>
+        )}
 
         {nextStep && !pending && <span className="text-[13px] text-faint">Дальше: {nextStep.title}</span>}
 
