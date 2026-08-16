@@ -8,6 +8,7 @@ import { referenceTypes } from "@/lib/content/seed/reference-types";
 import { advancedFunctions } from "@/lib/content/seed/advanced-functions";
 import { arrayIteration } from "@/lib/content/seed/array-iteration";
 import { objectsModule } from "@/lib/content/seed/objects";
+import { prototypesAndClasses } from "@/lib/content/seed/prototypes-and-classes";
 import type { SeedModule } from "@/lib/content/types";
 
 /**
@@ -18,14 +19,20 @@ import type { SeedModule } from "@/lib/content/types";
  *   npm run db:seed          — добавит недостающие модули
  *   npm run db:seed -- --force — пересоздаст их с нуля
  */
-const SEED: SeedModule[] = [jsBasics, collections, referenceTypes, advancedFunctions, arrayIteration, objectsModule];
+const SEED: SeedModule[] = [jsBasics, collections, referenceTypes, advancedFunctions, arrayIteration, objectsModule, prototypesAndClasses];
 
 const SEED_BLOCKS = [
   {
     slug: "js-core-main-concepts",
     title: "JS Core · Основные концепции",
     description: "Базовые конструкции языка, ссылочные типы, функции и перебор массивов.",
-    moduleSlugs: ["reference-types", "advanced-functions", "array-iteration", "objects"],
+    moduleSlugs: ["reference-types", "advanced-functions", "array-iteration"],
+  },
+  {
+    slug: "js-core-prototypes-and-classes",
+    title: "JS Core · Прототипы и классы",
+    description: "Прототипная модель JavaScript, конструкторы, классы и наследование.",
+    moduleSlugs: ["objects", "prototypes-and-classes"],
   },
 ];
 

@@ -42,6 +42,13 @@ import { languagesStatistic } from './languages-statistic';
 import { arrayCountsMap } from './array-counts-map';
 import { uniqueSet } from './unique-set';
 import { daysBetweenDates } from './days-between-dates';
+import { isEmptyPrototypes } from './is-empty-prototypes';
+import { bookLibrary } from './book-library';
+import { prototypeDecorator } from './prototype-decorator';
+import { objectCreatePolyfill } from './object-create-polyfill';
+import { bankAccount } from './bank-account';
+import { fluentCalc } from './fluent-calc';
+import { eventEmitterTask } from './event-emitter';
 
 /**
  * Каталог задач. Хранится файлами в репозитории, а не в БД:
@@ -92,6 +99,13 @@ export const tasks: Task[] = [
   arrayCountsMap,
   uniqueSet,
   daysBetweenDates,
+  isEmptyPrototypes,
+  bookLibrary,
+  prototypeDecorator,
+  objectCreatePolyfill,
+  bankAccount,
+  fluentCalc,
+  eventEmitterTask,
 ];
 
 export function getTask(slug: string): Task | undefined {
