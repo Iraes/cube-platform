@@ -31,7 +31,7 @@ export async function POST(request: Request) {
   }
 
   const progress = await getUserProgress(user.id);
-  if (!isLessonUnlocked(module, lesson.id, progress)) {
+  if (!isLessonUnlocked(module, lesson.id, progress, user.role)) {
     return Response.json({ error: "Сначала завершите предыдущий урок" }, { status: 403 });
   }
 

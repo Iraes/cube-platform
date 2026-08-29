@@ -24,8 +24,8 @@ export async function TaskPageContent({ taskSlug, lessonSlug, moduleSlug }: Prop
   if (!user && !isDemoTask) redirect("/login");
 
   const progress = user ? await getUserProgress(user.id) : EMPTY_PROGRESS;
-  if (user && module && !isTaskUnlocked(module, taskSlug, progress)) redirect(`/modules/${module.slug}`);
-  if (user && module && origin && !isLessonUnlocked(module, origin.id, progress)) redirect(`/modules/${module.slug}`);
+  if (user && module && !isTaskUnlocked(module, taskSlug, progress, user.role)) redirect(`/modules/${module.slug}`);
+  if (user && module && origin && !isLessonUnlocked(module, origin.id, progress, user.role)) redirect(`/modules/${module.slug}`);
 
   const backTo = origin && module
     ? { href: `/modules/${module.slug}/lessons/${origin.slug}`, label: origin.title }
@@ -34,7 +34,7 @@ export async function TaskPageContent({ taskSlug, lessonSlug, moduleSlug }: Prop
     ? origin ? getNextStepFromLesson(module, origin, taskSlug) : getNextStep(module, taskSlug)
     : undefined;
   const nextAllowed = user
-    ? Boolean(nextStep && module && isStepUnlocked(module, nextStep, progress))
+    ? Boolean(nextStep && module && isStepUnlocked(module, nextStep, progress, user.role))
     : nextStep?.kind === "task"
       ? (module?.demoTaskSlugs.includes(nextStep.id) ?? false)
       : (module?.lessons.some((lesson) => lesson.id === nextStep?.id && lesson.isDemo) ?? false);

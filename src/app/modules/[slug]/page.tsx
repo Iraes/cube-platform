@@ -22,6 +22,7 @@ export default async function ModulePage({ params }: { params: Promise<{ slug: s
       module={module}
       steps={getSteps(module)}
       progress={await getUserProgress(user.id)}
+      role={user.role}
     />
   );
 }

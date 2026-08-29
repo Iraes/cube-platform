@@ -23,7 +23,7 @@ export default async function LessonTasksPage({ params }: { params: Params }) {
   if (!module || !lesson) notFound();
 
   const progress = await getUserProgress(user.id);
-  if (!isLessonUnlocked(module, lesson.id, progress)) redirect(`/modules/${module.slug}`);
+  if (!isLessonUnlocked(module, lesson.id, progress, user.role)) redirect(`/modules/${module.slug}`);
 
   const tasks = getLessonTaskSlugs(lesson).flatMap((taskSlug) => {
     const task = getTask(taskSlug);

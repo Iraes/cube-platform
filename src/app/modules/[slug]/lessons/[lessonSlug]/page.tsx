@@ -33,7 +33,7 @@ export default async function LessonPage({
   if (!user && !lesson.isDemo) redirect("/login");
 
   const progress = user ? await getUserProgress(user.id) : EMPTY_PROGRESS;
-  if (user && !isLessonUnlocked(module, lesson.id, progress)) {
+  if (user && !isLessonUnlocked(module, lesson.id, progress, user.role)) {
     redirect(`/modules/${module.slug}`);
   }
 

@@ -2,12 +2,15 @@ import Link from "next/link";
 import { ProgressBar } from "@/components/ProgressBar";
 import type { Module, Step } from "@/lib/content/types";
 import type { UserProgress } from "@/lib/progress";
+import type { UserRole } from "@/lib/session";
 import { isStepUnlocked } from "@/lib/learningAccess";
 
 type Props = {
   module: Module;
   steps: Step[];
   progress: UserProgress;
+  /** Преподаватель и владелец видят все шаги: порядок нужен ученику */
+  role?: UserRole;
 };
 
 function StepRow({ step, index, done }: { step: Step; index: number; done: boolean }) {
@@ -46,14 +49,14 @@ function StepRow({ step, index, done }: { step: Step; index: number; done: boole
   );
 }
 
-export function ModuleView({ module, steps, progress }: Props) {
+export function ModuleView({ module, steps, progress, role }: Props) {
   const solved = new Set(progress.solvedTasks);
   const read = new Set(progress.readLessons);
 
   const isDone = (step: Step) => (step.kind === "lesson" ? read.has(step.id) : solved.has(step.id));
 
-  const lessonSteps = steps.filter((step) => step.kind === "lesson" && isStepUnlocked(module, step, progress));
-  const taskSteps = steps.filter((step) => step.kind === "task" && isStepUnlocked(module, step, progress));
+  const lessonSteps = steps.filter((step) => step.kind === "lesson" && isStepUnlocked(module, step, progress, role));
+  const taskSteps = steps.filter((step) => step.kind === "task" && isStepUnlocked(module, step, progress, role));
 
   return (
     <main className="mx-auto max-w-3xl px-6 py-10">
