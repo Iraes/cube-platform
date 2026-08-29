@@ -54,6 +54,27 @@ import { analyzeNumbers } from './array-iteration/module-checklist/analyze-numbe
 import { linkPrototype } from './prototypes-and-classes/prototype-vs-proto/link-prototype';
 import { userProfileClass } from './prototypes-and-classes/review-booking/user-profile-class';
 
+import { swapValues } from './primitive-types/variables/swap-values';
+import { safeNumber } from './primitive-types/type-conversion/safe-number';
+import { roundTo } from './primitive-types/numbers/round-to';
+import { capitalizeWord } from './primitive-types/strings/capitalize-word';
+import { wrapInTag } from './primitive-types/template-strings/wrap-in-tag';
+import { incrementCounter } from './reference-types/objects/increment-counter';
+import { countBrackets } from './reference-types/loops/count-brackets';
+import { greetDefault } from './reference-types/functions/greet-default';
+import { factorial } from './advanced-functions/recursion-basics/factorial';
+import { sumNestedNumbers } from './advanced-functions/recursion-practice/sum-nested-numbers';
+import { applyToAll } from './advanced-functions/higher-order-functions/apply-to-all';
+import { createCounter } from './advanced-functions/closures/create-counter';
+import { greaterThan } from './advanced-functions/closures-practice/greater-than';
+import { thisBox } from './advanced-functions/this-context/this-box';
+import { arrowBasics } from './array-iteration/arrow-functions/arrow-basics';
+import { mapFilterReduce } from './array-iteration/array-iteration-methods/map-filter-reduce';
+import { shallowEqual } from './objects/object-methods/shallow-equal';
+import { formatDateTask } from './objects/date/format-date';
+import { pointConstructor } from './prototypes-and-classes/constructor-functions/point-constructor';
+import { rectangleClass } from './prototypes-and-classes/classes/rectangle-class';
+
 /**
  * Каталог задач. Хранится файлами в репозитории, а не в БД:
  * задачи версионируются вместе с кодом и правятся через обычный git-diff.
@@ -66,48 +87,68 @@ export const tasks: Task[] = [
   filterEven,
   countChars,
   fizzBuzz,
+  capitalizeWord,
   capitalize,
+  safeNumber,
   defaultTo,
+  roundTo,
   compareWithPrecision,
   stopGninnipsMySdrow,
+  wrapInTag,
   wrapInParagraph,
   domToggleBox,
   domFilterList,
   errors,
   dataTypesQuiz,
+  swapValues,
+  greetDefault,
+  incrementCounter,
   lettersCount,
   finalGrade,
   singleFizzBuzz,
   arithmetic,
+  countBrackets,
   balancedBrackets,
   findAllIdx,
   replaceItems,
   moveToStart,
   hasArrays,
   numbersByParity,
+  factorial,
   sequenceSum,
+  sumNestedNumbers,
   nestedStringCount,
   optionalChainingPath,
+  applyToAll,
   partitionTask,
+  createCounter,
   onceTask,
+  greaterThan,
   arrayFilterFactories,
+  thisBox,
   objectCalculator,
+  arrowBasics,
+  mapFilterReduce,
   getField,
   createUsernames,
   calculatePrice,
   mostSenior,
   invertObject,
+  shallowEqual,
   deepEqualTask,
   sumRest,
   mergeObjects,
   languagesStatistic,
   arrayCountsMap,
   uniqueSet,
+  formatDateTask,
   daysBetweenDates,
   isEmptyPrototypes,
+  pointConstructor,
   bookLibrary,
   prototypeDecorator,
   objectCreatePolyfill,
+  rectangleClass,
   bankAccount,
   fluentCalc,
   eventEmitterTask,
