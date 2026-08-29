@@ -25,6 +25,12 @@ export const users = pgTable("users", {
   role: text("role", { enum: ["student", "teacher", "admin"] })
     .notNull()
     .default("student"),
+  /**
+   * Когда ученик последний раз открывал платформу. Отдельно от прогресса:
+   * тот двигается только отправкой решения и отметкой «Прочитано», а зайти
+   * и ничего не нажать — обычное дело, и преподавателю это тоже важно видеть.
+   */
+  lastSeenAt: timestamp("last_seen_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 

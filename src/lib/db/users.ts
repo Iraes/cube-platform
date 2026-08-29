@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { and, eq, isNull, lt, or } from "drizzle-orm";
 import { getDb } from "./index";
 import { users, type UserRow } from "./schema";
 import { hashPassword } from "@/lib/password";
@@ -92,4 +92,34 @@ export async function deleteUser(email: string): Promise<boolean> {
 export async function listUsers(): Promise<UserRow[]> {
   const db = await getDb();
   return db.select().from(users);
+}
+
+/** Через сколько повторный заход считается новым и пишется в базу */
+const PRESENCE_THROTTLE_MS = 5 * 60 * 1000;
+
+/**
+ * Отмечает, что пользователь сейчас на платформе.
+ *
+ * Пишем не на каждый переход по страницам, а не чаще раза в пять минут:
+ * до Neon каждый запрос — отдельный HTTP-вызов, и «был минуту назад» вместо
+ * «был только что» преподавателю ничего не меняет. Возвращает true, если
+ * запись действительно случилась.
+ */
+export async function touchLastSeen(id: string): Promise<boolean> {
+  const db = await getDb();
+  const updated = await db
+    .update(users)
+    .set({ lastSeenAt: new Date() })
+    .where(
+      and(
+        eq(users.id, id),
+        or(
+          isNull(users.lastSeenAt),
+          lt(users.lastSeenAt, new Date(Date.now() - PRESENCE_THROTTLE_MS)),
+        ),
+      ),
+    )
+    .returning({ id: users.id });
+
+  return updated.length > 0;
 }

@@ -66,9 +66,25 @@ export default async function StudentPage({ params }: { params: Promise<{ id: st
         </span>
       </div>
       <p className="mb-6 text-[13px] text-muted">
-        {user.name ? `${user.email} · ` : ""}на платформе с {formatDate(user.createdAt)} · последняя
-        активность: {formatActivity(user.lastActivity)}
+        {user.name ? `${user.email} · ` : ""}на платформе с {formatDate(user.createdAt)}
       </p>
+
+      <div className="mb-6 flex flex-wrap gap-x-8 gap-y-2 rounded-lg border border-border bg-surface px-5 py-3">
+        <div>
+          <span className="block text-[11px] font-semibold uppercase tracking-wider text-faint">
+            Последний заход
+          </span>
+          <span className="text-[13.5px] text-text">
+            {user.lastSeen ? formatActivity(user.lastSeen) : "не заходил"}
+          </span>
+        </div>
+        <div>
+          <span className="block text-[11px] font-semibold uppercase tracking-wider text-faint">
+            Последнее действие в прогрессе
+          </span>
+          <span className="text-[13.5px] text-text">{formatActivity(user.lastActivity)}</span>
+        </div>
+      </div>
 
       {/* ---------- Сводка ---------- */}
       <section className="mb-8 grid gap-4 rounded-lg border border-border bg-surface p-5 sm:grid-cols-2">

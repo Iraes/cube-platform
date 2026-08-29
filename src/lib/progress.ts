@@ -88,7 +88,10 @@ export type StudentSummary = {
   readLessons: string[];
   /** Всего отправок на проверку, включая неудачные */
   attemptCount: number;
+  /** Последнее действие, двигавшее прогресс: отправка решения или «Прочитано» */
   lastActivity: Date | null;
+  /** Последний заход на платформу — даже если ученик ничего не нажал */
+  lastSeen: Date | null;
 };
 
 /**
@@ -156,6 +159,7 @@ export async function getStudentSummaries(): Promise<StudentSummary[]> {
       readLessons: readByUser.get(user.id) ?? [],
       attemptCount: Number(attempts?.attempts ?? 0),
       lastActivity: later(toDate(attempts?.lastAt), lastReadByUser.get(user.id) ?? null),
+      lastSeen: toDate(user.lastSeenAt),
     };
   });
 }
@@ -228,6 +232,7 @@ export async function getStudentReport(userId: string): Promise<StudentReport | 
       readLessons: lessons.map((lesson) => lesson.lessonId),
       attemptCount: tasks.reduce((sum, task) => sum + task.attempts, 0),
       lastActivity,
+      lastSeen: toDate(user.lastSeenAt),
     },
     tasks,
     lessons,

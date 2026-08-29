@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { PresencePing } from "@/components/PresencePing";
 import { ThemeSelect } from "@/components/ThemeSelect";
 import { logoutAction } from "@/lib/actions/auth";
 import { getSessionUser } from "@/lib/session";
@@ -8,6 +9,9 @@ export async function Header() {
 
   return (
     <header className="flex h-14 shrink-0 items-center gap-4 border-b border-border bg-surface px-5">
+      {/* Шапка есть на каждой странице и уже знает пользователя — отмечаем заход отсюда */}
+      {user && <PresencePing />}
+
       <Link href="/" className="flex items-center gap-2.5 text-text">
         <span className="flex h-7 w-7 items-center justify-center rounded-md bg-accent font-mono text-[11px] font-bold text-accent-fg">
           {"{}"}

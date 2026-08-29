@@ -39,6 +39,12 @@ export default async function StudentsPage() {
         в демо, в счёт не идут.
       </p>
 
+      <p className="mb-6 max-w-2xl text-[12.5px] leading-relaxed text-faint">
+        Справа — когда ученик последний раз открывал платформу, а под этим — когда последний раз
+        сдвинул прогресс. Первое считается по заходам, второе — по отправкам решений и отметкам
+        «Прочитано»: заходить и ничего не нажимать тоже нормально.
+      </p>
+
       {people.length === 0 ? (
         <p className="rounded-lg border border-dashed border-border p-6 text-[13.5px] text-faint">
           Пользователей пока нет.
@@ -87,9 +93,16 @@ export default async function StudentsPage() {
                   <ProgressBar done={read} total={programLessons.size} />
                 </div>
 
-                <span className="w-36 shrink-0 text-right text-[12.5px] text-muted">
-                  {formatActivity(person.lastActivity)}
-                </span>
+                <div className="w-40 shrink-0 text-right">
+                  <span className="block text-[12.5px] text-muted">
+                    {person.lastSeen ? formatActivity(person.lastSeen) : "не заходил"}
+                  </span>
+                  <span className="mt-0.5 block text-[11.5px] text-faint">
+                    {person.lastActivity
+                      ? "прогресс: " + formatActivity(person.lastActivity)
+                      : "прогресса нет"}
+                  </span>
+                </div>
               </Link>
             </li>
             );
