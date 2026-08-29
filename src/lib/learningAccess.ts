@@ -1,10 +1,25 @@
 import type { Lesson, Module, Step } from '@/lib/content/types';
 import type { UserProgress } from '@/lib/progress';
 
-/** Задачи, которые преподаватель разместил непосредственно в уроке. */
+/** Все задачи, размещённые в уроке, включая необязательные разминки. */
 export function getLessonTaskSlugs(lesson: Lesson): string[] {
   return [...new Set(
     lesson.blocks.flatMap((block) => block.type === 'task' ? [block.slug] : []),
+  )];
+}
+
+/**
+ * Задачи, без которых урок не считается пройденным.
+ *
+ * Разминки сюда не входят: они появились у уже пройденных уроков задним
+ * числом, и если бы их требовали, ученик разом потерял бы доступ ко всему,
+ * что прошёл дальше.
+ */
+export function getRequiredTaskSlugs(lesson: Lesson): string[] {
+  return [...new Set(
+    lesson.blocks.flatMap((block) =>
+      block.type === 'task' && !block.optional ? [block.slug] : [],
+    ),
   )];
 }
 
@@ -12,7 +27,7 @@ export function getLessonTaskSlugs(lesson: Lesson): string[] {
 export function isLessonComplete(lesson: Lesson, progress: UserProgress): boolean {
   if (!progress.readLessons.includes(lesson.id)) return false;
   const solved = new Set(progress.solvedTasks);
-  return getLessonTaskSlugs(lesson).every((slug) => solved.has(slug));
+  return getRequiredTaskSlugs(lesson).every((slug) => solved.has(slug));
 }
 
 /** Первый незавершённый урок остаётся доступным, всё после него скрыто. */

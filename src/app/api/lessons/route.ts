@@ -2,7 +2,7 @@ import { getModules } from "@/lib/content";
 import { isMissingUserError } from "@/lib/db/errors";
 import { getUserProgress, markLessonRead } from "@/lib/progress";
 import { getSessionUser } from "@/lib/session";
-import { getLessonTaskSlugs, isLessonUnlocked } from "@/lib/learningAccess";
+import { getRequiredTaskSlugs, isLessonUnlocked } from "@/lib/learningAccess";
 
 export async function POST(request: Request) {
   const user = await getSessionUser();
@@ -36,7 +36,7 @@ export async function POST(request: Request) {
   }
 
   const solved = new Set(progress.solvedTasks);
-  const remaining = getLessonTaskSlugs(lesson).filter((taskSlug) => !solved.has(taskSlug));
+  const remaining = getRequiredTaskSlugs(lesson).filter((taskSlug) => !solved.has(taskSlug));
   if (remaining.length > 0) {
     return Response.json({ error: "Сначала решите все задачи урока", remaining }, { status: 409 });
   }

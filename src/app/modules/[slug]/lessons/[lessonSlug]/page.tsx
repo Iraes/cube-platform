@@ -5,7 +5,7 @@ import { EMPTY_PROGRESS, getUserProgress } from "@/lib/progress";
 import { getSessionUser } from "@/lib/session";
 import { toPublicBlocks } from "@/lib/quiz";
 import { getTask } from "@/lib/tasks";
-import { getLessonTaskSlugs, isLessonUnlocked } from "@/lib/learningAccess";
+import { getRequiredTaskSlugs, isLessonUnlocked } from "@/lib/learningAccess";
 
 export async function generateMetadata({
   params,
@@ -38,7 +38,7 @@ export default async function LessonPage({
   }
 
   const index = module.lessons.findIndex((item) => item.slug === lesson.slug);
-  const requiredTaskSlugs = getLessonTaskSlugs(lesson);
+  const requiredTaskSlugs = getRequiredTaskSlugs(lesson);
   const solvedTasks = new Set(progress.solvedTasks);
   const remainingTaskSlugs = requiredTaskSlugs.filter((taskSlug) => !solvedTasks.has(taskSlug));
 
