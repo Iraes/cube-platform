@@ -4,8 +4,6 @@ import { compareWithPrecision } from './standalone/compareWithPrecision';
 import { countChars } from './standalone/count-chars';
 import { dataTypesQuiz } from './standalone/data-types-quiz';
 import { defaultTo } from './standalone/defaultto';
-import { domFilterList } from './standalone/dom-filter-list';
-import { domToggleBox } from './standalone/dom-toggle-box';
 import { errors } from './standalone/errors';
 import { filterEven } from './standalone/filter-even';
 import { fizzBuzz } from './standalone/fizz-buzz';
@@ -57,6 +55,15 @@ import { arrayToCsv } from './error-handling/try-catch/array-to-csv';
 import { incrementStoredCounter } from './error-handling/data-boundaries/increment-counter';
 import { repeatableData } from './error-handling/custom-errors/repeatable-data';
 import { applyFunctions } from './error-handling/custom-errors/apply-functions';
+import { sumFileSizes } from './async-code/callbacks/sum-file-sizes';
+import { getUsersInfo } from './async-code/callbacks/get-users-info';
+import { increaseLowestSalary } from './async-code/promises/increase-lowest-salary';
+import { promiseRaceTask } from './async-code/promises/promise-race';
+import { promiseAllTask } from './async-code/promises/promise-all';
+import { increaseAllSalaries } from './async-code/async-await/increase-all-salaries';
+import { promisesInSeries } from './async-code/async-await/promises-in-series';
+import { throttleTask } from './async-code/event-loop/throttle';
+import { debounceTask } from './async-code/event-loop/debounce';
 
 import { swapValues } from './primitive-types/variables/swap-values';
 import { safeNumber } from './primitive-types/type-conversion/safe-number';
@@ -79,6 +86,17 @@ import { formatDateTask } from './objects/date/format-date';
 import { pointConstructor } from './prototypes-and-classes/constructor-functions/point-constructor';
 import { rectangleClass } from './prototypes-and-classes/classes/rectangle-class';
 
+import { domFindElements } from './browser-api/dom/dom-find-elements';
+import { domSetAttributes } from './browser-api/dom/dom-set-attributes';
+import { domRenderList } from './browser-api/dom/dom-render-list';
+import { domToggleBox } from './browser-api/dom/dom-toggle-box';
+import { domDelegateClicks } from './browser-api/dom/dom-delegate-clicks';
+import { domFilterList } from './browser-api/dom/dom-filter-list';
+import { statusCategory } from './browser-api/network/status-category';
+import { buildQuery } from './browser-api/network/build-query';
+import { isIdempotent } from './browser-api/http/is-idempotent';
+import { storageCounter } from './browser-api/http/storage-counter';
+
 /**
  * Каталог задач. Хранится файлами в репозитории, а не в БД:
  * задачи версионируются вместе с кодом и правятся через обычный git-diff.
@@ -100,8 +118,6 @@ export const tasks: Task[] = [
   stopGninnipsMySdrow,
   wrapInTag,
   wrapInParagraph,
-  domToggleBox,
-  domFilterList,
   errors,
   dataTypesQuiz,
   swapValues,
@@ -164,6 +180,25 @@ export const tasks: Task[] = [
   incrementStoredCounter,
   repeatableData,
   applyFunctions,
+  sumFileSizes,
+  getUsersInfo,
+  increaseLowestSalary,
+  promiseRaceTask,
+  promiseAllTask,
+  increaseAllSalaries,
+  promisesInSeries,
+  throttleTask,
+  debounceTask,
+  domFindElements,
+  domSetAttributes,
+  domRenderList,
+  domToggleBox,
+  domDelegateClicks,
+  domFilterList,
+  statusCategory,
+  buildQuery,
+  isIdempotent,
+  storageCounter,
 ];
 
 export function getTask(slug: string): Task | undefined {

@@ -10,6 +10,8 @@ import { arrayIteration } from "@/lib/content/seed/array-iteration";
 import { objectsModule } from "@/lib/content/seed/objects";
 import { prototypesAndClasses } from "@/lib/content/seed/prototypes-and-classes";
 import { errorHandling } from "@/lib/content/seed/error-handling";
+import { asyncCode } from "@/lib/content/seed/async-code";
+import { dom, network, httpRest } from "@/lib/content/seed/browser-api";
 import type { SeedModule } from "@/lib/content/types";
 
 /**
@@ -20,7 +22,7 @@ import type { SeedModule } from "@/lib/content/types";
  *   npm run db:seed          — добавит недостающие модули
  *   npm run db:seed -- --force — пересоздаст их с нуля
  */
-const SEED: SeedModule[] = [jsBasics, collections, referenceTypes, advancedFunctions, arrayIteration, objectsModule, prototypesAndClasses, errorHandling];
+const SEED: SeedModule[] = [jsBasics, collections, referenceTypes, advancedFunctions, arrayIteration, objectsModule, prototypesAndClasses, errorHandling, asyncCode, dom, network, httpRest];
 
 const SEED_BLOCKS = [
   {
@@ -39,7 +41,13 @@ const SEED_BLOCKS = [
     slug: "js-core-errors-and-async",
     title: "JS Core · Обработка ошибок и асинхронность",
     description: "Исключения, асинхронный JavaScript, промисы и управление параллельными операциями.",
-    moduleSlugs: ["error-handling"],
+    moduleSlugs: ["error-handling", "async-code"],
+  },
+  {
+    slug: "js-core-browser-api",
+    title: "JS Core · Browser API и HTTP",
+    description: "Дерево документа и события, запросы к серверу, протокол HTTP и устройство REST-API.",
+    moduleSlugs: ["dom", "network", "http-rest"],
   },
 ];
 
