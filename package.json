@@ -11,6 +11,7 @@
     "audit:content": "tsx scripts/audit-content.ts",
     "verify:warmups": "tsx scripts/verify-warmups.ts",
     "verify:async": "tsx scripts/verify-async-code.ts",
+    "verify:classes": "tsx scripts/verify-classes.ts",
     "verify:browser": "tsx scripts/verify-browser-api.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx scripts/migrate.ts",
