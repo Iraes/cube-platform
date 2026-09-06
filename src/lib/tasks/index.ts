@@ -53,6 +53,10 @@ import { arrowFunctionFactory } from './array-iteration/arrow-functions/arrow-fu
 import { analyzeNumbers } from './array-iteration/module-checklist/analyze-numbers';
 import { linkPrototype } from './prototypes-and-classes/prototype-vs-proto/link-prototype';
 import { userProfileClass } from './prototypes-and-classes/review-booking/user-profile-class';
+import { arrayToCsv } from './error-handling/try-catch/array-to-csv';
+import { incrementStoredCounter } from './error-handling/data-boundaries/increment-counter';
+import { repeatableData } from './error-handling/custom-errors/repeatable-data';
+import { applyFunctions } from './error-handling/custom-errors/apply-functions';
 
 import { swapValues } from './primitive-types/variables/swap-values';
 import { safeNumber } from './primitive-types/type-conversion/safe-number';
@@ -156,6 +160,10 @@ export const tasks: Task[] = [
   analyzeNumbers,
   linkPrototype,
   userProfileClass,
+  arrayToCsv,
+  incrementStoredCounter,
+  repeatableData,
+  applyFunctions,
 ];
 
 export function getTask(slug: string): Task | undefined {

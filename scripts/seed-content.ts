@@ -9,6 +9,7 @@ import { advancedFunctions } from "@/lib/content/seed/advanced-functions";
 import { arrayIteration } from "@/lib/content/seed/array-iteration";
 import { objectsModule } from "@/lib/content/seed/objects";
 import { prototypesAndClasses } from "@/lib/content/seed/prototypes-and-classes";
+import { errorHandling } from "@/lib/content/seed/error-handling";
 import type { SeedModule } from "@/lib/content/types";
 
 /**
@@ -19,7 +20,7 @@ import type { SeedModule } from "@/lib/content/types";
  *   npm run db:seed          — добавит недостающие модули
  *   npm run db:seed -- --force — пересоздаст их с нуля
  */
-const SEED: SeedModule[] = [jsBasics, collections, referenceTypes, advancedFunctions, arrayIteration, objectsModule, prototypesAndClasses];
+const SEED: SeedModule[] = [jsBasics, collections, referenceTypes, advancedFunctions, arrayIteration, objectsModule, prototypesAndClasses, errorHandling];
 
 const SEED_BLOCKS = [
   {
@@ -33,6 +34,12 @@ const SEED_BLOCKS = [
     title: "JS Core · Прототипы и классы",
     description: "Прототипная модель JavaScript, конструкторы, классы и наследование.",
     moduleSlugs: ["objects", "prototypes-and-classes"],
+  },
+  {
+    slug: "js-core-errors-and-async",
+    title: "JS Core · Обработка ошибок и асинхронность",
+    description: "Исключения, асинхронный JavaScript, промисы и управление параллельными операциями.",
+    moduleSlugs: ["error-handling"],
   },
 ];
 
