@@ -21,6 +21,9 @@ async function checkPromisesInSeries(steps) {
 `,
   tests: [
     { name: 'Передаёт результат и не запускает функции параллельно', fn: 'checkPromisesInSeries', input: [[{ add: 2, delay: 5 }, { add: 3, delay: 1 }, { add: 4, delay: 2 }]], expected: { value: 9, order: ['start-0', 'end-0', 'start-1', 'end-1', 'start-2', 'end-2'] } },
-    { name: 'Пустая цепочка возвращает undefined', fn: 'promisesInSeries', input: [], expected: undefined },
+    { name: 'Одна функция: результат передаётся наружу', fn: 'checkPromisesInSeries', input: [[{ add: 7, delay: 1 }]], expected: { value: 7, order: ['start-0', 'end-0'] } },
+    { name: 'Порядок сохраняется, даже если первая функция медленнее', fn: 'checkPromisesInSeries', input: [[{ add: 1, delay: 8 }, { add: 1, delay: 1 }]], expected: { value: 2, order: ['start-0', 'end-0', 'start-1', 'end-1'] } },
+    { name: 'Пустой массив функций возвращает undefined', fn: 'checkPromisesInSeries', input: [[]], expected: { value: undefined, order: [] } },
+    { name: 'Вызов без аргумента возвращает undefined', fn: 'promisesInSeries', input: [], expected: undefined },
   ],
 };

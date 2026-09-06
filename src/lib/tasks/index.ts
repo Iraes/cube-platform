@@ -97,6 +97,14 @@ import { buildQuery } from './browser-api/network/build-query';
 import { isIdempotent } from './browser-api/http/is-idempotent';
 import { storageCounter } from './browser-api/http/storage-counter';
 
+import { toPositiveNumber } from './error-handling/try-catch/to-positive-number';
+import { safeParse } from './error-handling/data-boundaries/safe-parse';
+import { validationError } from './error-handling/custom-errors/validation-error';
+import { readOneFile } from './async-code/callbacks/read-one-file';
+import { makePromise } from './async-code/promises/make-promise';
+import { sumAsync } from './async-code/async-await/sum-async';
+import { executionOrder } from './async-code/event-loop/execution-order';
+
 /**
  * Каталог задач. Хранится файлами в репозитории, а не в БД:
  * задачи версионируются вместе с кодом и правятся через обычный git-diff.
@@ -176,17 +184,24 @@ export const tasks: Task[] = [
   analyzeNumbers,
   linkPrototype,
   userProfileClass,
+  toPositiveNumber,
   arrayToCsv,
+  safeParse,
   incrementStoredCounter,
+  validationError,
   repeatableData,
   applyFunctions,
+  readOneFile,
   sumFileSizes,
   getUsersInfo,
+  makePromise,
   increaseLowestSalary,
   promiseRaceTask,
   promiseAllTask,
+  sumAsync,
   increaseAllSalaries,
   promisesInSeries,
+  executionOrder,
   throttleTask,
   debounceTask,
   domFindElements,
