@@ -19,7 +19,9 @@
     "user:add": "tsx scripts/add-user.ts",
     "user:delete": "tsx scripts/add-user.ts --delete",
     "user:role": "tsx scripts/add-user.ts",
-    "user:list": "tsx scripts/add-user.ts --list"
+    "user:list": "tsx scripts/add-user.ts --list",
+    "db:export": "tsx scripts/export-data.ts",
+    "verify:promises": "tsx scripts/verify-promise-chains.ts"
   },
   "dependencies": {
     "@codemirror/commands": "^6.10.4",
