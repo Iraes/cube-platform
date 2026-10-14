@@ -74,7 +74,23 @@ async function main() {
   const findings: Finding[] = [];
   const add = (level: Finding['level'], where: string, what: string) => findings.push({ level, where, what });
 
-  const [blocks, modules] = await Promise.all([getCourseBlocks(), getModules()]);
+  /**
+   * Связь с базой с машины владельца рвётся регулярно, и раньше аудит из-за
+   * этого не запускался вовсе. Половина проверок базы не требует — прогоняем
+   * её в любом случае, а про пропущенную половину честно пишем в отчёте.
+   */
+  let blocks: Awaited<ReturnType<typeof getCourseBlocks>> = [];
+  let modules: Awaited<ReturnType<typeof getModules>> = [];
+  let contentAvailable = true;
+
+  try {
+    [blocks, modules] = await Promise.all([getCourseBlocks(), getModules()]);
+  } catch (error) {
+    contentAvailable = false;
+    out('Базу прочитать не удалось: ' + (error instanceof Error ? error.message.split('\n')[0] : String(error)));
+    out('Проверки связей «модуль → урок → задача» пропущены, каталог задач проверяется полностью.\n');
+  }
+
   const byBlock = new Map(blocks.map((b) => [b.id, b.title]));
 
   /* ---------- 1. Каталог задач ---------- */
@@ -135,11 +151,15 @@ async function main() {
     }
   }
 
-  for (const task of tasks) {
-    if (!attached.has(task.slug)) add('замечание', task.slug, 'не привязана ни к одному модулю — ученику недоступна');
-    else if (!inLesson.has(task.slug)) add('замечание', task.slug, 'привязана к модулю, но не встречается ни в одном уроке');
-    if ((attached.get(task.slug) ?? []).length > 1) {
-      add('ошибка', task.slug, 'привязана к нескольким модулям: ' + attached.get(task.slug)!.join(', '));
+  // Без базы список привязок пуст, и этот проход объявил бы «ничьими» все
+  // задачи каталога разом — выводы здесь имеют смысл только с живым контентом
+  if (contentAvailable) {
+    for (const task of tasks) {
+      if (!attached.has(task.slug)) add('замечание', task.slug, 'не привязана ни к одному модулю — ученику недоступна');
+      else if (!inLesson.has(task.slug)) add('замечание', task.slug, 'привязана к модулю, но не встречается ни в одном уроке');
+      if ((attached.get(task.slug) ?? []).length > 1) {
+        add('ошибка', task.slug, 'привязана к нескольким модулям: ' + attached.get(task.slug)!.join(', '));
+      }
     }
   }
 
@@ -175,6 +195,11 @@ async function main() {
   for (const f of errors) out('  ' + f.where + ' — ' + f.what);
   out('\n=== ЗАМЕЧАНИЯ: ' + notes.length + ' ===');
   for (const f of notes) out('  ' + f.where + ' — ' + f.what);
+
+  if (!contentAvailable) {
+    out('\nПРОВЕРЕНО НЕ ВСЁ: базы не было, связи «модуль → урок → задача» ' +
+        'и содержимое уроков не проверялись. Повторите прогон, когда база ответит.');
+  }
 
   if (errors.length) process.exit(1);
 }
