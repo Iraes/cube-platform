@@ -5,6 +5,9 @@
  * Не заменяет прогон эталонных решений — ловит другое: обрывы связей,
  * задачи, которые проходят пустой заготовкой, и уроки без закрепления.
  */
+// Первым делом .env.local: без DATABASE_URL приложение поднимает пустой
+// локальный PGlite, и аудит проверял бы не тот каталог, что видят ученики.
+import './env';
 import vm from 'node:vm';
 import { getCourseBlocks, getModules } from '@/lib/content';
 import { buildWorkerSource } from '@/lib/runner/workerHarness';
