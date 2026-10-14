@@ -60,6 +60,7 @@ import { getUsersInfo } from './async-code/callbacks/get-users-info';
 import { increaseLowestSalary } from './async-code/promises/increase-lowest-salary';
 import { promiseRaceTask } from './async-code/promises/promise-race';
 import { promiseAllTask } from './async-code/promises/promise-all';
+import { promiseChainsOrder } from './async-code/promises/promise-chains-order';
 import { increaseAllSalaries } from './async-code/async-await/increase-all-salaries';
 import { promisesInSeries } from './async-code/async-await/promises-in-series';
 import { throttleTask } from './async-code/event-loop/throttle';
@@ -198,6 +199,7 @@ export const tasks: Task[] = [
   increaseLowestSalary,
   promiseRaceTask,
   promiseAllTask,
+  promiseChainsOrder,
   sumAsync,
   increaseAllSalaries,
   promisesInSeries,
