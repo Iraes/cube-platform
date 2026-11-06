@@ -37,13 +37,13 @@ function checkInheritedVisible() {
 function checkNotCopied() {
   const { prototype, object } = makePair();
   linkPrototype(object, prototype);
-  return { isOwn: Object.hasOwn(object, 'inherited'), keys: Object.keys(object) };
+  return { isOwn: Object.hasOwn(object, 'inherited'), keys: Object.keys(object), visible: object.inherited };
 }
 
 function checkOwnPropertyKept() {
   const { prototype, object } = makePair();
   linkPrototype(object, prototype);
-  return object.own;
+  return { own: object.own, prototypeSet: Object.getPrototypeOf(object) === prototype };
 }
 
 function checkNullPrototype() {
@@ -56,8 +56,8 @@ function checkNullPrototype() {
     { name: 'Возвращает тот же объект, а не копию', fn: 'checkReturnsSameObject', input: [], expected: true },
     { name: 'Прототип действительно установлен', fn: 'checkPrototypeSet', input: [], expected: true },
     { name: 'Свойство прототипа видно через объект', fn: 'checkInheritedVisible', input: [], expected: 'из прототипа' },
-    { name: 'Свойство не скопировано: оно не собственное', fn: 'checkNotCopied', input: [], expected: { isOwn: false, keys: ['own'] } },
-    { name: 'Собственное свойство не потерялось', fn: 'checkOwnPropertyKept', input: [], expected: 'собственное' },
+    { name: 'Свойство не скопировано: оно не собственное, но видно через объект', fn: 'checkNotCopied', input: [], expected: { isOwn: false, keys: ['own'], visible: 'из прототипа' } },
+    { name: 'Собственное свойство не потерялось и прототип установлен', fn: 'checkOwnPropertyKept', input: [], expected: { own: 'собственное', prototypeSet: true } },
     { name: 'Прототипом может быть null — цепочка обрывается', fn: 'checkNullPrototype', input: [], expected: { prototype: null, own: 'собственное' } },
   ],
 };
