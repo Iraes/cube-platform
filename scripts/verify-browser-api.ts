@@ -49,10 +49,19 @@ function runAlgorithm(code: string, tests: unknown[]): Promise<any> {
 
 /* ---------- DOM-задачи: та же разметка и те же хелперы ---------- */
 
-/** jsdom не в зависимостях проекта: ставится разово через npm i -D jsdom */
+/**
+ * jsdom не в зависимостях проекта: ставится разово через npm i -D jsdom.
+ *
+ * Спецификатор собран в переменную намеренно. С литералом `import('jsdom')`
+ * TypeScript требует модуль на этапе проверки типов, а `next build` проверяет
+ * типы по всему проекту — включая scripts. На машине владельца jsdom стоит
+ * локально, на Vercel его нет, и сборка падала с TS2307. Зависимость тут
+ * необязательная, поэтому её отсутствие ловим во время выполнения.
+ */
 async function loadJsdom(): Promise<any | null> {
+  const specifier: string = 'jsdom';
   try {
-    return await import('jsdom');
+    return await import(specifier);
   } catch {
     return null;
   }
