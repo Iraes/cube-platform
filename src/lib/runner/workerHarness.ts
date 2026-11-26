@@ -120,6 +120,12 @@ function __cubeDeepEqual(a, b) {
   }
   var ka = Object.keys(a);
   var kb = Object.keys(b);
+  // Свойства со значением undefined после доставки задачи в браузер пропадают:
+  // React Flight не восстанавливает их в объектах (в массивах — восстанавливает).
+  // Поэтому «ключа нет» и «ключ равен undefined» считаем одним и тем же,
+  // иначе верное решение падает на проверке, где ожидается undefined.
+  ka = ka.filter(function (key) { return a[key] !== undefined; });
+  kb = kb.filter(function (key) { return b[key] !== undefined; });
   if (ka.length !== kb.length) return false;
   for (var k = 0; k < ka.length; k++) {
     if (!Object.prototype.hasOwnProperty.call(b, ka[k])) return false;
