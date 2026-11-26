@@ -299,7 +299,7 @@ export const httpRest: SeedModule = {
 
 HTTPS — тот же HTTP поверх шифрованного соединения. Отличается не формат, а канал.` },
         { type: 'video', url: 'https://vk.com/video-227259800_456239210', title: 'Протокол HTTP' },
-        { type: 'video', url: 'https://www.youtube.com/watch?v=PpdQQjPS0MA', title: 'HTTP за 36 минут: методы, статус-коды, заголовки, редиректы, SSL', note: 'Подробный разбор методов, статус-кодов, заголовков, редиректов и перехода на HTTPS. Дольше учебного видео, зато с примерами запросов и ответов.' },
+        { type: 'video', url: 'https://www.youtube.com/watch?v=XaTwnKLQi4A', title: 'Что такое REST API (HTTP)? SOAP, GraphQL, WebSockets, RPC — вся теория', note: 'От клиент-серверной архитектуры до HTTP: структура запроса и ответа, методы, заголовки, статус-коды, REST и идемпотентность. Дальше — SOAP, GraphQL, WebSockets, gRPC и tRPC: пригодится в уроках про API и REST.' },
         { type: 'article', url: 'https://developer.mozilla.org/ru/docs/Web/HTTP/Overview', title: 'Обзор HTTP', source: 'MDN' },
         { type: 'article', url: 'https://habr.com/ru/post/215117/', title: 'Протокол HTTP', source: 'Хабр' },
         quickQuiz('http-stateless', 'Почему говорят, что HTTP не хранит состояние?', ['Сервер не помнит предыдущие запросы, каждый приходит сам по себе', 'HTTP запрещает передавать данные в теле запроса', 'Браузер очищает данные после каждого запроса', 'Состояние хранится только на сервере'], [0], 'Каждый запрос независим. Всё, что должно сохраняться между запросами, клиент передаёт заново — в куках, заголовках или теле. Отсюда сессии и токены.'),
