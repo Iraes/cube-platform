@@ -97,6 +97,7 @@ import { statusCategory } from './browser-api/network/status-category';
 import { buildQuery } from './browser-api/network/build-query';
 import { isIdempotent } from './browser-api/http/is-idempotent';
 import { storageCounter } from './browser-api/http/storage-counter';
+import { networksQuiz } from './browser-api/http/networks-quiz';
 
 import { toPositiveNumber } from './error-handling/try-catch/to-positive-number';
 import { safeParse } from './error-handling/data-boundaries/safe-parse';
@@ -216,6 +217,7 @@ export const tasks: Task[] = [
   buildQuery,
   isIdempotent,
   storageCounter,
+  networksQuiz,
 ];
 
 export function getTask(slug: string): Task | undefined {

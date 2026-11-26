@@ -303,6 +303,7 @@ HTTPS — тот же HTTP поверх шифрованного соедине�
         { type: 'article', url: 'https://developer.mozilla.org/ru/docs/Web/HTTP/Overview', title: 'Обзор HTTP', source: 'MDN' },
         { type: 'article', url: 'https://habr.com/ru/post/215117/', title: 'Протокол HTTP', source: 'Хабр' },
         quickQuiz('http-stateless', 'Почему говорят, что HTTP не хранит состояние?', ['Сервер не помнит предыдущие запросы, каждый приходит сам по себе', 'HTTP запрещает передавать данные в теле запроса', 'Браузер очищает данные после каждого запроса', 'Состояние хранится только на сервере'], [0], 'Каждый запрос независим. Всё, что должно сохраняться между запросами, клиент передаёт заново — в куках, заголовках или теле. Отсюда сессии и токены.'),
+        { type: 'task', slug: 'networks-quiz', note: 'Тест по всему блоку сетей: интернет, DNS и HTTP.' },
       ],
     },
     {
@@ -399,5 +400,5 @@ DELETE /users/17   удалить
       ],
     },
   ],
-  taskSlugs: ['is-idempotent', 'storage-counter'],
+  taskSlugs: ['is-idempotent', 'storage-counter', 'networks-quiz'],
 };
