@@ -22,7 +22,8 @@
     "user:list": "tsx scripts/add-user.ts --list",
     "db:export": "tsx scripts/export-data.ts",
     "verify:promises": "tsx scripts/verify-promise-chains.ts",
-    "verify:harness": "tsx scripts/verify-harness.ts"
+    "verify:harness": "tsx scripts/verify-harness.ts",
+    "verify:drafts": "tsx scripts/verify-drafts.ts"
   },
   "dependencies": {
     "@codemirror/commands": "^6.10.4",

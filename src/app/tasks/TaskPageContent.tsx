@@ -6,6 +6,7 @@ import { isLessonUnlocked, isStepUnlocked, isTaskUnlocked } from "@/lib/learning
 import { EMPTY_PROGRESS, getUserProgress } from "@/lib/progress";
 import { toPublicQuestions } from "@/lib/quiz";
 import { getSessionUser } from "@/lib/session";
+import { GUEST_OWNER_KEY } from "@/lib/drafts";
 import { getTask } from "@/lib/tasks";
 
 type Props = { taskSlug: string; lessonSlug?: string; moduleSlug?: string };
@@ -43,5 +44,5 @@ export async function TaskPageContent({ taskSlug, lessonSlug, moduleSlug }: Prop
     return <QuizWorkspace slug={task.slug} title={task.title} description={task.description} questions={toPublicQuestions(task)} solved={progress.solvedTasks.includes(taskSlug)} moduleSlug={module?.slug} moduleTitle={module?.title} backTo={backTo} nextStep={nextAllowed ? nextStep : undefined} isDemo={!user} />;
   }
 
-  return <TaskWorkspace task={task} solved={progress.solvedTasks.includes(taskSlug)} moduleSlug={module?.slug} moduleTitle={module?.title} backTo={backTo} nextStep={nextAllowed ? nextStep : undefined} isDemo={!user} />;
+  return <TaskWorkspace key={task.slug} task={task} solved={progress.solvedTasks.includes(taskSlug)} moduleSlug={module?.slug} moduleTitle={module?.title} backTo={backTo} nextStep={nextAllowed ? nextStep : undefined} isDemo={!user} draftOwner={user?.id ?? GUEST_OWNER_KEY} />;
 }
