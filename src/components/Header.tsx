@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { PatchNotes } from "@/components/PatchNotes";
 import { PresencePing } from "@/components/PresencePing";
 import { ThemeSelect } from "@/components/ThemeSelect";
 import { logoutAction } from "@/lib/actions/auth";
@@ -20,6 +21,8 @@ export async function Header() {
       </Link>
 
       <div className="flex-1" />
+
+      <PatchNotes />
 
       <ThemeSelect />
 
