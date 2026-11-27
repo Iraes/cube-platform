@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import { EditorState, Prec } from "@codemirror/state";
 import { EditorView, keymap } from "@codemirror/view";
 import { HighlightStyle, syntaxHighlighting } from "@codemirror/language";
+import { indentWithTab } from "@codemirror/commands";
 import { javascript } from "@codemirror/lang-javascript";
 import { tags } from "@lezer/highlight";
 import { basicSetup } from "codemirror";
@@ -53,9 +54,15 @@ export function CodeEditor({ value, onChange, onRun }: Props) {
           basicSetup,
           javascript(),
           syntaxHighlighting(highlightStyle),
-          // Ctrl+Enter должен победить дефолтную вставку строки
+          // Tab и Shift+Tab ставят и снимают отступ вместо ухода фокуса
+          // на соседний элемент страницы. Выйти из редактора без мыши:
+          // Escape, затем Tab — встроенный двухсекундный режим CodeMirror
+          // (EditorView.setTabFocusMode, команда temporarilySetTabFocusMode),
+          // постоянно его переключает Ctrl+M из defaultKeymap в basicSetup.
           Prec.highest(
             keymap.of([
+              indentWithTab,
+              // Ctrl+Enter должен победить дефолтную вставку строки
               {
                 key: "Mod-Enter",
                 preventDefault: true,
